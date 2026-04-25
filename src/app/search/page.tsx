@@ -57,7 +57,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
           </div>
 
           {query ? (
-            <InfiniteFeed initialPosts={searchResults} search={query} />
+            <InfiniteFeed key={query} initialPosts={searchResults} search={query} />
           ) : (
             <div className="text-center py-20">
               <p className="text-neutral-400 text-lg">

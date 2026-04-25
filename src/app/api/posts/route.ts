@@ -83,7 +83,13 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const slug = slugify(body.title);
+    let slug = slugify(body.title);
+
+    const existing = await db.select({ id: posts.id }).from(posts)
+      .where(sql`${posts.slug} = ${slug}`).get();
+    if (existing) {
+      slug = `${slug}-${Date.now()}`;
+    }
 
     const newPost = await db
       .insert(posts)

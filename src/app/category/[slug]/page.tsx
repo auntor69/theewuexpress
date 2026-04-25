@@ -51,7 +51,7 @@ export default async function CategoryPage({ params }: PageProps) {
               {category.description}
             </p>
           </div>
-          <InfiniteFeed initialPosts={categoryPosts} category={params.slug} />
+          <InfiniteFeed key={params.slug} initialPosts={categoryPosts} category={params.slug} />
         </div>
       </div>
       <Footer />

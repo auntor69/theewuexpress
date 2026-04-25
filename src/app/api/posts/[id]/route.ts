@@ -25,7 +25,10 @@ export async function GET(
       return NextResponse.json(post);
     }
 
-    const post = await db.select().from(posts).where(eq(posts.id, id)).get();
+    const session = await auth();
+    const post = session
+      ? await db.select().from(posts).where(eq(posts.id, id)).get()
+      : await db.select().from(posts).where(sql`${posts.id} = ${id} AND ${posts.published} = 1`).get();
 
     if (!post) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
@@ -54,11 +57,20 @@ export async function PUT(
     const id = parseInt(params.id);
     const body = await request.json();
 
+    const slug = body.title ? slugify(body.title) : undefined;
+    if (slug) {
+      const existing = await db.select({ id: posts.id }).from(posts)
+        .where(sql`${posts.slug} = ${slug} AND ${posts.id} != ${id}`).get();
+      if (existing) {
+        return NextResponse.json({ error: "A post with this title already exists" }, { status: 409 });
+      }
+    }
+
     const updatedPost = await db
       .update(posts)
       .set({
         title: body.title,
-        slug: body.title ? slugify(body.title) : undefined,
+        slug,
         caption: body.caption,
         content: body.content,
         coverImage: body.coverImage,
