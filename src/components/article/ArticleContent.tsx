@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+import DOMPurify from "isomorphic-dompurify";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -27,6 +28,19 @@ interface ArticleContentProps {
 
 export function ArticleContent({ post }: ArticleContentProps) {
   const category = getCategoryBySlug(post.category);
+
+  const sanitizedContent = useMemo(
+    () =>
+      DOMPurify.sanitize(post.content, {
+        ALLOWED_TAGS: [
+          "p", "h1", "h2", "h3", "h4", "h5", "h6",
+          "blockquote", "ul", "ol", "li", "a", "strong", "em",
+          "img", "br", "hr", "span", "div", "figure", "figcaption",
+        ],
+        ALLOWED_ATTR: ["href", "src", "alt", "title", "class", "target", "rel"],
+      }),
+    [post.content]
+  );
 
   useEffect(() => {
     fetch(`/api/posts/${post.id}/views`, { method: "POST" }).catch(() => {});
@@ -167,7 +181,7 @@ export function ArticleContent({ post }: ArticleContentProps) {
             prose-img:rounded-xl
             prose-strong:text-neutral-900 dark:prose-strong:text-white
             prose-li:text-neutral-700 dark:prose-li:text-neutral-300"
-          dangerouslySetInnerHTML={{ __html: post.content }}
+          dangerouslySetInnerHTML={{ __html: sanitizedContent }}
         />
 
         <div className="border-t border-neutral-200 dark:border-neutral-800 mt-16 pt-8">

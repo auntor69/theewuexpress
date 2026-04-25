@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { posts } from "@/db/schema";
-import { desc, eq, sql } from "drizzle-orm";
+import { desc, sql } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { slugify } from "@/lib/utils";
 
@@ -17,57 +17,38 @@ export async function GET(request: NextRequest) {
   const offset = (page - 1) * limit;
 
   try {
-    let query = db.select().from(posts).where(eq(posts.published, true));
+    let whereCondition = sql`${posts.published} = 1`;
 
     if (category) {
-      query = db
-        .select()
-        .from(posts)
-        .where(
-          sql`${posts.published} = 1 AND ${posts.category} = ${category}`
-        );
+      whereCondition = sql`${posts.published} = 1 AND ${posts.category} = ${category}`;
     }
 
     if (featured === "true") {
-      query = db
-        .select()
-        .from(posts)
-        .where(
-          sql`${posts.published} = 1 AND ${posts.featured} = 1`
-        );
+      whereCondition = sql`${posts.published} = 1 AND ${posts.featured} = 1`;
     }
 
     if (editorPick === "true") {
-      query = db
-        .select()
-        .from(posts)
-        .where(
-          sql`${posts.published} = 1 AND ${posts.editorPick} = 1`
-        );
+      whereCondition = sql`${posts.published} = 1 AND ${posts.editorPick} = 1`;
     }
 
     if (search) {
-      query = db
-        .select()
-        .from(posts)
-        .where(
-          sql`${posts.published} = 1 AND (${posts.title} LIKE ${'%' + search + '%'} OR ${posts.caption} LIKE ${'%' + search + '%'})`
-        );
+      whereCondition = sql`${posts.published} = 1 AND (${posts.title} LIKE ${'%' + search + '%'} OR ${posts.caption} LIKE ${'%' + search + '%'})`;
     }
 
-    let orderBy;
-    if (trending === "true") {
-      orderBy = desc(posts.views);
-    } else {
-      orderBy = desc(posts.createdAt);
-    }
+    const orderBy = trending === "true" ? desc(posts.views) : desc(posts.createdAt);
 
-    const results = await query.orderBy(orderBy).limit(limit).offset(offset);
+    const results = await db
+      .select()
+      .from(posts)
+      .where(whereCondition)
+      .orderBy(orderBy)
+      .limit(limit)
+      .offset(offset);
 
     const countResult = await db
       .select({ count: sql<number>`count(*)` })
       .from(posts)
-      .where(eq(posts.published, true));
+      .where(whereCondition);
 
     const total = countResult[0]?.count || 0;
 
