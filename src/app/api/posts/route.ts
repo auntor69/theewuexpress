@@ -17,23 +17,27 @@ export async function GET(request: NextRequest) {
   const offset = (page - 1) * limit;
 
   try {
-    let whereCondition = sql`${posts.published} = 1`;
+    const conditions = [sql`${posts.published} = 1`];
 
     if (category) {
-      whereCondition = sql`${posts.published} = 1 AND ${posts.category} = ${category}`;
+      conditions.push(sql`${posts.category} = ${category}`);
     }
 
     if (featured === "true") {
-      whereCondition = sql`${posts.published} = 1 AND ${posts.featured} = 1`;
+      conditions.push(sql`${posts.featured} = 1`);
     }
 
     if (editorPick === "true") {
-      whereCondition = sql`${posts.published} = 1 AND ${posts.editorPick} = 1`;
+      conditions.push(sql`${posts.editorPick} = 1`);
     }
 
     if (search) {
-      whereCondition = sql`${posts.published} = 1 AND (${posts.title} LIKE ${'%' + search + '%'} OR ${posts.caption} LIKE ${'%' + search + '%'})`;
+      conditions.push(sql`(${posts.title} LIKE ${'%' + search + '%'} OR ${posts.caption} LIKE ${'%' + search + '%'} OR ${posts.content} LIKE ${'%' + search + '%'})`);
     }
+
+    const whereCondition = conditions.length === 1
+      ? conditions[0]
+      : sql.join(conditions, sql` AND `);
 
     const orderBy = trending === "true" ? desc(posts.views) : desc(posts.createdAt);
 

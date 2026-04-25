@@ -34,7 +34,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
         sql`${posts.published} = 1 AND (${posts.title} LIKE ${'%' + query + '%'} OR ${posts.caption} LIKE ${'%' + query + '%'} OR ${posts.content} LIKE ${'%' + query + '%'})`
       )
       .orderBy(desc(posts.createdAt))
-      .limit(12);
+      .limit(6);
   }
 
   return (

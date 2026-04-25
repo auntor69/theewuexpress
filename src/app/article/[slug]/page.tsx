@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { posts } from "@/db/schema";
-import { eq, sql, desc } from "drizzle-orm";
+import { sql, desc } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const post = await db
     .select()
     .from(posts)
-    .where(eq(posts.slug, params.slug))
+    .where(sql`${posts.slug} = ${params.slug} AND ${posts.published} = 1`)
     .get();
 
   if (!post) return { title: "Not Found" };
@@ -45,7 +45,7 @@ export default async function ArticlePage({ params }: PageProps) {
   const post = await db
     .select()
     .from(posts)
-    .where(eq(posts.slug, params.slug))
+    .where(sql`${posts.slug} = ${params.slug} AND ${posts.published} = 1`)
     .get();
 
   if (!post) notFound();

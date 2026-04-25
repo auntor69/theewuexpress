@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { posts } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { slugify } from "@/lib/utils";
 
@@ -16,7 +16,7 @@ export async function GET(
       const post = await db
         .select()
         .from(posts)
-        .where(eq(posts.slug, params.id))
+        .where(sql`${posts.slug} = ${params.id} AND ${posts.published} = 1`)
         .get();
 
       if (!post) {
