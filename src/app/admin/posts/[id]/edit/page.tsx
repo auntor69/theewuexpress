@@ -12,7 +12,10 @@ export default function EditPostPage() {
 
   useEffect(() => {
     fetch(`/api/posts/${params.id}`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch post");
+        return res.json();
+      })
       .then((data) => {
         setPost(data);
         setLoading(false);
