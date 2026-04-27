@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useInView } from "react-intersection-observer";
 import { PostCard } from "./PostCard";
 import { Post } from "@/db/schema";
@@ -53,11 +53,14 @@ export function InfiniteFeed({
     }
   }, [page, loading, hasMore, category, search]);
 
+  const loadMoreRef = useRef(loadMore);
+  loadMoreRef.current = loadMore;
+
   useEffect(() => {
     if (inView) {
-      loadMore();
+      loadMoreRef.current();
     }
-  }, [inView, loadMore]);
+  }, [inView]);
 
   if (!posts.length) {
     return (

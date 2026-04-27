@@ -40,7 +40,8 @@ export async function POST(request: NextRequest) {
 
     const urls: string[] = [];
 
-    for (const file of files) {
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
 
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-      const uniqueName = `${Date.now()}-${safeName}`;
+      const uniqueName = `${Date.now()}-${i}-${safeName}`;
       const filePath = join(uploadDir, uniqueName);
 
       await writeFile(filePath, buffer);
