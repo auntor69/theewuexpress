@@ -9,11 +9,11 @@ const MAX_VIEWS_PER_WINDOW = 3;
 
 function cleanupExpired() {
   const now = Date.now();
-  for (const [key, timestamp] of viewedPosts) {
+  viewedPosts.forEach((timestamp, key) => {
     if (now - timestamp > RATE_LIMIT_WINDOW) {
       viewedPosts.delete(key);
     }
-  }
+  });
 }
 
 export async function POST(
@@ -34,9 +34,12 @@ export async function POST(
       return NextResponse.json({ success: true, cached: true });
     }
 
-    const ipViewCount = Array.from(viewedPosts.keys()).filter(
-      (k) => k.startsWith(`${ip}:`) && Date.now() - (viewedPosts.get(k) || 0) < RATE_LIMIT_WINDOW
-    ).length;
+    let ipViewCount = 0;
+    viewedPosts.forEach((ts, k) => {
+      if (k.startsWith(`${ip}:`) && Date.now() - ts < RATE_LIMIT_WINDOW) {
+        ipViewCount++;
+      }
+    });
 
     if (ipViewCount >= MAX_VIEWS_PER_WINDOW) {
       return NextResponse.json({ success: true, limited: true });
