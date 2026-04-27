@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import DOMPurify from "isomorphic-dompurify";
 import Image from "next/image";
 import Link from "next/link";
@@ -46,8 +46,11 @@ export function ArticleContent({ post }: ArticleContentProps) {
     fetch(`/api/posts/${post.id}/views`, { method: "POST" }).catch(() => {});
   }, [post.id]);
 
-  const shareUrl =
-    typeof window !== "undefined" ? window.location.href : "";
+  const [shareUrl, setShareUrl] = useState("");
+
+  useEffect(() => {
+    setShareUrl(window.location.href);
+  }, []);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(shareUrl);

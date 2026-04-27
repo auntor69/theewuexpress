@@ -29,7 +29,10 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetch("/api/admin/analytics")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch");
+        return res.json();
+      })
       .then((data) => {
         setAnalytics(data);
         setLoading(false);
@@ -70,13 +73,13 @@ export default function AdminDashboard() {
           },
           {
             label: "Top Post Views",
-            value: formatViews(analytics?.topPosts[0]?.views || 0),
+            value: formatViews(analytics?.topPosts?.[0]?.views || 0),
             icon: TrendingUp,
             color: "from-red-500 to-orange-500",
           },
           {
             label: "Categories",
-            value: analytics?.categoryStats.length || 0,
+            value: analytics?.categoryStats?.length || 0,
             icon: BarChart3,
             color: "from-purple-500 to-pink-500",
           },

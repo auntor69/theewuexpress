@@ -45,6 +45,14 @@ export async function POST(request: NextRequest) {
       const buffer = Buffer.from(bytes);
 
       const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+      const ext = safeName.split(".").pop()?.toLowerCase();
+      const ALLOWED_EXTENSIONS = ["jpg", "jpeg", "png", "gif", "webp"];
+      if (!ext || !ALLOWED_EXTENSIONS.includes(ext)) {
+        return NextResponse.json(
+          { error: `File extension '.${ext}' not allowed` },
+          { status: 400 }
+        );
+      }
       const uniqueName = `${Date.now()}-${safeName}`;
       const filePath = join(uploadDir, uniqueName);
 
