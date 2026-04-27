@@ -40,7 +40,7 @@ const samplePosts = [
 <blockquote>"The semester I almost dropped out was the semester I found my purpose."</blockquote>
 <p>I started over. Not from scratch, but from truth. I acknowledged what went wrong, sought help, and showed up every single day. It took an extra year, but I walked across that stage with my head held high.</p>
 <p>If you're reading this and you're in that dark place — keep going. Your transcript doesn't define your story.</p>`,
-    coverImage: "https://images.unsplash.com/photo-1523050854058-8df90110c476?w=1200&h=800&fit=crop",
+    coverImage: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=1200&h=800&fit=crop",
     category: "confessions",
     tags: JSON.stringify(["personal", "academic", "motivation"]),
     featured: true,
