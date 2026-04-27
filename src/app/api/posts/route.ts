@@ -86,6 +86,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     let slug = slugify(body.title);
 
+    if (!slug) {
+      return NextResponse.json({ error: "Title must contain at least one alphanumeric character" }, { status: 400 });
+    }
+
     const existing = await db.select({ id: posts.id }).from(posts)
       .where(sql`${posts.slug} = ${slug}`).get();
     if (existing) {

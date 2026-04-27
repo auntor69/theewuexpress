@@ -57,7 +57,7 @@ export async function PUT(
     const id = parseInt(params.id);
     const body = await request.json();
 
-    const slug = body.title ? slugify(body.title) : undefined;
+    const slug = body.title ? slugify(body.title) || undefined : undefined;
     if (slug) {
       const existing = await db.select({ id: posts.id }).from(posts)
         .where(sql`${posts.slug} = ${slug} AND ${posts.id} != ${id}`).get();
