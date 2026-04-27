@@ -57,10 +57,10 @@ export function InfiniteFeed({
   loadMoreRef.current = loadMore;
 
   useEffect(() => {
-    if (inView) {
+    if (inView && !loading) {
       loadMoreRef.current();
     }
-  }, [inView]);
+  }, [inView, loading]);
 
   if (!posts.length) {
     return (

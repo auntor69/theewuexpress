@@ -80,7 +80,7 @@ export async function PUT(
         featured: body.featured,
         editorPick: body.editorPick,
         published: body.published,
-        updatedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, ''),
       })
       .where(eq(posts.id, id))
       .returning();
