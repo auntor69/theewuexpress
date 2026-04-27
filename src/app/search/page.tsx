@@ -25,16 +25,18 @@ export default async function SearchPage({ searchParams }: PageProps) {
   const query = searchParams.q || "";
 
   let searchResults: typeof posts.$inferSelect[] = [];
+  let totalCount = 0;
 
   if (query) {
-    searchResults = await db
-      .select()
-      .from(posts)
-      .where(
-        sql`${posts.published} = 1 AND (${posts.title} LIKE ${'%' + query + '%'} OR ${posts.caption} LIKE ${'%' + query + '%'} OR ${posts.content} LIKE ${'%' + query + '%'})`
-      )
-      .orderBy(desc(posts.createdAt))
-      .limit(6);
+    const searchCondition = sql`${posts.published} = 1 AND (${posts.title} LIKE ${'%' + query + '%'} OR ${posts.caption} LIKE ${'%' + query + '%'} OR ${posts.content} LIKE ${'%' + query + '%'})`;
+
+    const [results, countResult] = await Promise.all([
+      db.select().from(posts).where(searchCondition).orderBy(desc(posts.createdAt)).limit(6),
+      db.select({ count: sql<number>`count(*)` }).from(posts).where(searchCondition),
+    ]);
+
+    searchResults = results;
+    totalCount = Number(countResult[0]?.count || 0);
   }
 
   return (
@@ -51,7 +53,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
             </div>
             {query && (
               <p className="text-neutral-500">
-                {searchResults.length} {searchResults.length === 1 ? "story" : "stories"} found
+                {totalCount} {totalCount === 1 ? "story" : "stories"} found
               </p>
             )}
           </div>
