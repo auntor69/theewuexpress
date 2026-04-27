@@ -39,7 +39,9 @@ export function AdminSidebar() {
             const Icon = item.icon;
             const isActive =
               pathname === item.href ||
-              (item.href !== "/admin" && pathname.startsWith(item.href + "/"));
+              (item.href !== "/admin" &&
+                pathname.startsWith(item.href + "/") &&
+                !navItems.some((other) => other.href !== item.href && other.href.length > item.href.length && pathname.startsWith(other.href)));
             return (
               <Link
                 key={item.href}
