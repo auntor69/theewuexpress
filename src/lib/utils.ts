@@ -51,6 +51,10 @@ export function slugify(text: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+export function escapeLikePattern(str: string): string {
+  return str.replace(/\\/g, "\\\\").replace(/%/g, "\\%").replace(/_/g, "\\_");
+}
+
 export function cn(...classes: (string | undefined | null | false)[]): string {
   return classes.filter(Boolean).join(" ");
 }

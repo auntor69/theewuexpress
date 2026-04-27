@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { posts } from "@/db/schema";
 import { desc, sql } from "drizzle-orm";
 import { auth } from "@/lib/auth";
-import { slugify } from "@/lib/utils";
+import { slugify, escapeLikePattern } from "@/lib/utils";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -32,7 +32,8 @@ export async function GET(request: NextRequest) {
     }
 
     if (search) {
-      conditions.push(sql`(${posts.title} LIKE ${'%' + search + '%'} OR ${posts.caption} LIKE ${'%' + search + '%'} OR ${posts.content} LIKE ${'%' + search + '%'})`);
+      const escaped = '%' + escapeLikePattern(search) + '%';
+      conditions.push(sql`(${posts.title} LIKE ${escaped} ESCAPE '\\' OR ${posts.caption} LIKE ${escaped} ESCAPE '\\' OR ${posts.content} LIKE ${escaped} ESCAPE '\\')`);
     }
 
     const whereCondition = conditions.length === 1

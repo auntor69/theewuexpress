@@ -48,6 +48,7 @@ export function InfiniteFeed({
       }
     } catch (error) {
       console.error("Error loading more posts:", error);
+      setHasMore(false);
     } finally {
       setLoading(false);
     }

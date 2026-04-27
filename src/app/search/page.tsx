@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { posts } from "@/db/schema";
 import { desc, sql } from "drizzle-orm";
+import { escapeLikePattern } from "@/lib/utils";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { InfiniteFeed } from "@/components/home/InfiniteFeed";
@@ -28,7 +29,8 @@ export default async function SearchPage({ searchParams }: PageProps) {
   let totalCount = 0;
 
   if (query) {
-    const searchCondition = sql`${posts.published} = 1 AND (${posts.title} LIKE ${'%' + query + '%'} OR ${posts.caption} LIKE ${'%' + query + '%'} OR ${posts.content} LIKE ${'%' + query + '%'})`;
+    const escaped = '%' + escapeLikePattern(query) + '%';
+    const searchCondition = sql`${posts.published} = 1 AND (${posts.title} LIKE ${escaped} ESCAPE '\\' OR ${posts.caption} LIKE ${escaped} ESCAPE '\\' OR ${posts.content} LIKE ${escaped} ESCAPE '\\')`;
 
     const [results, countResult] = await Promise.all([
       db.select().from(posts).where(searchCondition).orderBy(desc(posts.createdAt)).limit(6),
