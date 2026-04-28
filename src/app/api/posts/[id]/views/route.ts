@@ -22,6 +22,9 @@ export async function POST(
 ) {
   try {
     const id = parseInt(params.id);
+    if (isNaN(id)) {
+      return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
+    }
     const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
       request.headers.get("x-real-ip") ||
       null;

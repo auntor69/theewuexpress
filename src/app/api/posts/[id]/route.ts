@@ -58,6 +58,9 @@ export async function PUT(
     const body = await request.json();
 
     const slug = body.title ? slugify(body.title) || undefined : undefined;
+    if (body.title && !slug) {
+      return NextResponse.json({ error: "Title must contain at least one alphanumeric character" }, { status: 400 });
+    }
     if (slug) {
       const existing = await db.select({ id: posts.id }).from(posts)
         .where(sql`${posts.slug} = ${slug} AND ${posts.id} != ${id}`).get();

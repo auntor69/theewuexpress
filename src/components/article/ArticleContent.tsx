@@ -52,9 +52,13 @@ export function ArticleContent({ post }: ArticleContentProps) {
     setShareUrl(window.location.href);
   }, []);
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(shareUrl);
-    toast.success("Link copied!");
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success("Link copied!");
+    } catch {
+      toast.error("Failed to copy link");
+    }
   };
 
   const handleShare = async () => {
