@@ -46,7 +46,7 @@ export function ArticleContent({ post }: ArticleContentProps) {
     fetch(`/api/posts/${post.id}/views`, { method: "POST" }).catch(() => {});
   }, [post.id]);
 
-  const [shareUrl, setShareUrl] = useState("");
+  const [shareUrl, setShareUrl] = useState(`/article/${post.slug}`);
 
   useEffect(() => {
     setShareUrl(window.location.href);
