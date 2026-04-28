@@ -30,13 +30,15 @@ export function CategoryBar() {
                     isHovered
                       ? ""
                       : isDark
-                        ? `bg-gradient-to-r ${cat.color} text-white`
+                        ? ""
                         : "bg-[#08216e] text-white"
                   }`}
                   style={
                     isHovered
                       ? { background: "#ffdb57", color: "#000000" }
-                      : undefined
+                      : isDark
+                        ? { background: "#f5f5f5", color: "#07226b" }
+                        : undefined
                   }
                   onMouseEnter={() => setHoveredSlug(cat.slug)}
                   onMouseLeave={() => setHoveredSlug(null)}
