@@ -1,5 +1,14 @@
+function parseUTCDate(dateString: string): Date {
+  // SQLite stores UTC timestamps without Z suffix; browsers treat bare
+  // datetime strings as local time. Append Z so JS parses them as UTC.
+  if (!dateString.endsWith("Z") && !dateString.includes("+")) {
+    return new Date(dateString.replace(" ", "T") + "Z");
+  }
+  return new Date(dateString);
+}
+
 export function formatDate(dateString: string): string {
-  const date = new Date(dateString);
+  const date = parseUTCDate(dateString);
   return date.toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
@@ -8,7 +17,7 @@ export function formatDate(dateString: string): string {
 }
 
 export function timeAgo(dateString: string): string {
-  const date = new Date(dateString);
+  const date = parseUTCDate(dateString);
   const now = new Date();
   const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
