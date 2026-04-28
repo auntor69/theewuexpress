@@ -24,28 +24,31 @@ export async function POST(
     const id = parseInt(params.id);
     const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
       request.headers.get("x-real-ip") ||
-      "unknown";
-    const key = `${ip}:${id}`;
+      null;
 
-    cleanupExpired();
+    if (ip) {
+      const key = `${ip}:${id}`;
 
-    const lastView = viewedPosts.get(key);
-    if (lastView && Date.now() - lastView < RATE_LIMIT_WINDOW) {
-      return NextResponse.json({ success: true, cached: true });
-    }
+      cleanupExpired();
 
-    let ipViewCount = 0;
-    viewedPosts.forEach((ts, k) => {
-      if (k.startsWith(`${ip}:`) && Date.now() - ts < RATE_LIMIT_WINDOW) {
-        ipViewCount++;
+      const lastView = viewedPosts.get(key);
+      if (lastView && Date.now() - lastView < RATE_LIMIT_WINDOW) {
+        return NextResponse.json({ success: true, cached: true });
       }
-    });
 
-    if (ipViewCount >= MAX_VIEWS_PER_WINDOW) {
-      return NextResponse.json({ success: true, limited: true });
+      let ipViewCount = 0;
+      viewedPosts.forEach((ts, k) => {
+        if (k.startsWith(`${ip}:`) && Date.now() - ts < RATE_LIMIT_WINDOW) {
+          ipViewCount++;
+        }
+      });
+
+      if (ipViewCount >= MAX_VIEWS_PER_WINDOW) {
+        return NextResponse.json({ success: true, limited: true });
+      }
+
+      viewedPosts.set(key, Date.now());
     }
-
-    viewedPosts.set(key, Date.now());
 
     await db
       .update(posts)

@@ -19,7 +19,7 @@ export function InfiniteFeed({
 }: InfiniteFeedProps) {
   const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [page, setPage] = useState(2);
-  const [hasMore, setHasMore] = useState(true);
+  const [hasMore, setHasMore] = useState(initialPosts.length >= 6);
   const [loading, setLoading] = useState(false);
 
   const { ref, inView } = useInView({ threshold: 0 });
