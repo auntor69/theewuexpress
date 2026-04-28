@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
     }
 
     const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    const ALLOWED_EXTENSIONS = ["jpg", "jpeg", "png", "gif", "webp"];
     const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
     for (const file of files) {
@@ -30,6 +31,14 @@ export async function POST(request: NextRequest) {
       if (file.size > MAX_SIZE) {
         return NextResponse.json(
           { error: "File size exceeds 10MB limit" },
+          { status: 400 }
+        );
+      }
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+      const ext = safeName.split(".").pop()?.toLowerCase();
+      if (!ext || !ALLOWED_EXTENSIONS.includes(ext)) {
+        return NextResponse.json(
+          { error: `File extension '.${ext}' not allowed` },
           { status: 400 }
         );
       }
@@ -46,14 +55,6 @@ export async function POST(request: NextRequest) {
       const buffer = Buffer.from(bytes);
 
       const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
-      const ext = safeName.split(".").pop()?.toLowerCase();
-      const ALLOWED_EXTENSIONS = ["jpg", "jpeg", "png", "gif", "webp"];
-      if (!ext || !ALLOWED_EXTENSIONS.includes(ext)) {
-        return NextResponse.json(
-          { error: `File extension '.${ext}' not allowed` },
-          { status: 400 }
-        );
-      }
       const uniqueName = `${Date.now()}-${i}-${safeName}`;
       const filePath = join(uploadDir, uniqueName);
 
