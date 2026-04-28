@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -45,9 +46,7 @@ export default function LoginPage() {
         className="w-full max-w-sm"
       >
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl flex items-center justify-center text-white font-black text-2xl mx-auto mb-4">
-            E
-          </div>
+          <Image src="/logo.png" alt="EWU Express" width={64} height={64} className="rounded-2xl mx-auto mb-4" />
           <h1 className="text-2xl font-black text-white">Admin Login</h1>
           <p className="text-neutral-500 text-sm mt-1">
             The EWU Express Dashboard

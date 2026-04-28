@@ -11,6 +11,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -25,9 +26,7 @@ export function AdminSidebar() {
     <aside className="w-64 bg-neutral-950 text-white min-h-screen flex flex-col fixed left-0 top-0">
       <div className="p-6">
         <div className="flex items-center gap-2 mb-1">
-          <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-lg flex items-center justify-center text-white font-black text-sm">
-            E
-          </div>
+          <Image src="/logo.png" alt="EWU Express" width={32} height={32} className="rounded-lg" />
           <span className="font-black text-sm tracking-tight">EWU EXPRESS</span>
         </div>
         <p className="text-neutral-500 text-xs">Admin Dashboard</p>

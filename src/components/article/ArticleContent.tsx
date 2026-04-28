@@ -189,9 +189,7 @@ export function ArticleContent({ post }: ArticleContentProps) {
 
         <div className="border-t border-neutral-200 dark:border-neutral-800 mt-16 pt-8">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center text-white font-black">
-              E
-            </div>
+            <Image src="/logo.png" alt="EWU Express" width={48} height={48} className="rounded-full" />
             <div>
               <p className="font-bold dark:text-white">The EWU Express</p>
               <p className="text-sm text-neutral-500">

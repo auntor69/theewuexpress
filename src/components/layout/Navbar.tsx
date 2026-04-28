@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Menu, X } from "lucide-react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { categories } from "@/lib/categories";
 import { ThemeToggle } from "./ThemeToggle";
@@ -47,9 +48,7 @@ export function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-lg flex items-center justify-center text-white font-black text-sm group-hover:scale-110 transition-transform">
-                E
-              </div>
+              <Image src="/logo.png" alt="EWU Express" width={32} height={32} className="rounded-lg group-hover:scale-110 transition-transform" />
               <span className="font-black text-lg tracking-tight hidden sm:block dark:text-white">
                 THE EWU EXPRESS
               </span>

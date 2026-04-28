@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { categories } from "@/lib/categories";
 
 export function Footer() {
@@ -10,9 +11,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-lg flex items-center justify-center text-white font-black text-sm">
-                E
-              </div>
+              <Image src="/logo.png" alt="EWU Express" width={32} height={32} className="rounded-lg" />
               <span className="font-black text-lg tracking-tight">
                 THE EWU EXPRESS
               </span>
