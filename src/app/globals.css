@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #ffffff;
+    --foreground: #0a0a0a;
+  }
+
+  .dark {
+    --background: #0a0a0a;
+    --foreground: #fafafa;
+  }
+
+  body {
+    @apply bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@layer components {
+  .article-content blockquote {
+    @apply relative;
+  }
+
+  .article-content blockquote::before {
+    content: "\201C";
+    @apply absolute -left-2 -top-4 text-6xl text-red-500/20 font-serif;
+  }
+}
