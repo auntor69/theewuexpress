@@ -57,7 +57,7 @@ export function Footer() {
               />
               <button
                 type="submit"
-                className="px-4 py-2 bg-gradient-to-r from-red-500 to-orange-500 rounded-lg text-sm font-medium text-white hover:opacity-90 transition-opacity"
+                className="px-4 py-2 bg-[#ffdb57] rounded-lg text-sm font-bold text-black hover:opacity-90 transition-opacity"
               >
                 Subscribe
               </button>
