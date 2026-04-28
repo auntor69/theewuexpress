@@ -57,6 +57,9 @@ export async function PUT(
     const id = parseInt(params.id);
     const body = await request.json();
 
+    if (body.title !== undefined && !body.title.trim()) {
+      return NextResponse.json({ error: "Title cannot be empty" }, { status: 400 });
+    }
     const slug = body.title ? slugify(body.title) || undefined : undefined;
     if (body.title && !slug) {
       return NextResponse.json({ error: "Title must contain at least one alphanumeric character" }, { status: 400 });
