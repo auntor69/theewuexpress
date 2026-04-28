@@ -84,6 +84,9 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
+    if (!body.title || typeof body.title !== 'string' || !body.title.trim()) {
+      return NextResponse.json({ error: "Title is required" }, { status: 400 });
+    }
     let slug = slugify(body.title);
 
     if (!slug) {

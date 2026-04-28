@@ -10,7 +10,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const id = parseInt(params.id);
+    const id = /^\d+$/.test(params.id) ? parseInt(params.id) : NaN;
 
     if (isNaN(id)) {
       const post = await db
