@@ -42,7 +42,7 @@ export default async function CategoryPage({ params }: PageProps) {
         <div className="max-w-7xl mx-auto">
           <div className="mb-8">
             <div
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r ${category.color} text-white font-bold text-lg mb-4`}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-white font-bold text-lg mb-4 bg-[#08216e] dark:bg-gradient-to-r ${category.darkColor}`}
             >
               <span className="text-2xl">{category.emoji}</span>
               {category.name}

@@ -5,6 +5,7 @@ export const categories = [
     description: "The pulse of university life",
     emoji: "🔥",
     color: "from-orange-500 to-red-500",
+    darkColor: "dark:from-orange-500 dark:to-red-500",
   },
   {
     slug: "confessions",
@@ -12,6 +13,7 @@ export const categories = [
     description: "Raw, honest, unfiltered",
     emoji: "🤫",
     color: "from-purple-500 to-pink-500",
+    darkColor: "dark:from-purple-500 dark:to-pink-500",
   },
   {
     slug: "stories",
@@ -19,6 +21,7 @@ export const categories = [
     description: "Tales that define us",
     emoji: "📖",
     color: "from-blue-500 to-cyan-500",
+    darkColor: "dark:from-blue-500 dark:to-cyan-500",
   },
   {
     slug: "real-talk",
@@ -26,6 +29,7 @@ export const categories = [
     description: "No filter, no pretense",
     emoji: "💬",
     color: "from-green-500 to-emerald-500",
+    darkColor: "dark:from-green-500 dark:to-emerald-500",
   },
   {
     slug: "events",
@@ -33,6 +37,7 @@ export const categories = [
     description: "Don't miss out",
     emoji: "🎉",
     color: "from-yellow-500 to-orange-500",
+    darkColor: "dark:from-yellow-500 dark:to-orange-500",
   },
 ] as const;
 

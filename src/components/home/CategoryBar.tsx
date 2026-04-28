@@ -2,9 +2,13 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useTheme } from "next-themes";
 import { categories } from "@/lib/categories";
 
 export function CategoryBar() {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
   return (
     <section className="px-4 sm:px-6 py-6">
       <div className="max-w-7xl mx-auto">
@@ -18,7 +22,7 @@ export function CategoryBar() {
             >
               <Link
                 href={`/category/${cat.slug}`}
-                className={`flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r ${cat.color} text-white font-bold text-sm whitespace-nowrap hover:scale-105 transition-transform shadow-lg`}
+                className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-white font-bold text-sm whitespace-nowrap hover:scale-105 transition-transform shadow-lg ${isDark ? `bg-gradient-to-r ${cat.color}` : "bg-[#08216e]"}`}
               >
                 <span className="text-lg">{cat.emoji}</span>
                 {cat.name}
