@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { FileText, Eye, TrendingUp, FolderPlus } from "lucide-react";
 import { formatViews } from "@/lib/utils";
 import { getCategoryBySlug } from "@/lib/categories";

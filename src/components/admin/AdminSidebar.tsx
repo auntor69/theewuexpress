@@ -11,6 +11,8 @@ import {
   LogOut,
   ArrowLeft,
   Database,
+  Users,
+  Settings as SettingsIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -19,6 +21,8 @@ const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/posts", label: "All Posts", icon: FileText },
   { href: "/admin/posts/new", label: "New Post", icon: PlusCircle },
+  { href: "/admin/subscribers", label: "Subscribers", icon: Users },
+  { href: "/admin/settings", label: "Settings", icon: SettingsIcon },
 ];
 
 export function AdminSidebar() {

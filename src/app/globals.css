@@ -15,6 +15,28 @@
 
   body {
     @apply bg-white dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100;
+    /* Smoother scrolling + momentum on touch devices, at GPU-friendly cost. */
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Keep horizontal carousels snappy — vertical smooth only. */
+  .scrollbar-hide {
+    scroll-behavior: auto;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
@@ -25,6 +47,15 @@
   }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+}
+
+@layer utilities {
+  /* GPU-friendly transforms — promotes elements so scroll/animation stay smooth on weak devices. */
+  .will-animate {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
 }
 

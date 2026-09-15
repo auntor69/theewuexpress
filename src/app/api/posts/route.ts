@@ -5,6 +5,7 @@ import { desc, sql } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { slugify, escapeLikePattern } from "@/lib/utils";
 import { getCategoryBySlug } from "@/lib/categories";
+import { notifySubscribersOfPost } from "@/lib/notifications";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -137,6 +138,11 @@ export async function POST(request: NextRequest) {
         published: body.published !== false,
       })
       .returning();
+
+    // New post published → notify subscribers (best-effort, never blocks the response).
+    if (newPost[0]?.published) {
+      void notifySubscribersOfPost(newPost[0]);
+    }
 
     return NextResponse.json(newPost[0], { status: 201 });
   } catch (error) {

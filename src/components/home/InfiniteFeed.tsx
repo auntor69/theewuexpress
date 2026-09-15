@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { useInView } from "react-intersection-observer";
 import { PostCard } from "./PostCard";
 import { Post } from "@/db/schema";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { SearchX } from "lucide-react";
 
 interface InfiniteFeedProps {

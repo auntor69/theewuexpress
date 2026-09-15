@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import DOMPurify from "isomorphic-dompurify";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { Post } from "@/db/schema";
 import { getCategoryBySlug } from "@/lib/categories";
 import {

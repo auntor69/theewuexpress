@@ -5,6 +5,7 @@ import { eq, sql } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { slugify } from "@/lib/utils";
 import { getCategoryBySlug } from "@/lib/categories";
+import { notifySubscribersOfPost } from "@/lib/notifications";
 
 export async function GET(
   request: NextRequest,
@@ -87,6 +88,10 @@ export async function PUT(
       category = body.category;
     }
 
+    // Read the previous state so we can detect a real draft → published transition
+    // (PostForm always sends published: true when saving an already-live post).
+    const existing = await db.select().from(posts).where(eq(posts.id, id)).get();
+
     const updatedPost = await db
       .update(posts)
       .set({
@@ -108,6 +113,12 @@ export async function PUT(
 
     if (!updatedPost.length) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    }
+
+    // Draft → published transition → notify subscribers (best-effort).
+    // Only when the post was NOT published before, so routine edits don't re-notify.
+    if (updatedPost[0].published && existing && !existing.published) {
+      void notifySubscribersOfPost(updatedPost[0]);
     }
 
     return NextResponse.json(updatedPost[0]);

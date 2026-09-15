@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { Post } from "@/db/schema";
@@ -46,6 +46,7 @@ export function PostCard({ post, index, variant = "default" }: PostCardProps) {
               src={post.coverImage}
               alt={post.title}
               fill
+              sizes="80px"
               className="object-cover group-hover:scale-110 transition-transform duration-500"
             />
           </div>
@@ -82,6 +83,7 @@ export function PostCard({ post, index, variant = "default" }: PostCardProps) {
               src={post.coverImage}
               alt={post.title}
               fill
+              sizes="(min-width: 640px) 256px, 100vw"
               className="object-cover group-hover:scale-105 transition-transform duration-700"
             />
           </div>
@@ -123,6 +125,7 @@ export function PostCard({ post, index, variant = "default" }: PostCardProps) {
             src={post.coverImage}
             alt={post.title}
             fill
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
             className="object-cover group-hover:scale-105 transition-transform duration-700"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />

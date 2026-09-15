@@ -24,6 +24,28 @@ export const posts = sqliteTable("posts", {
     .notNull(),
 });
 
+export const subscribers = sqliteTable("subscribers", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  email: text("email"),
+  // UTC timestamp string, same convention as posts.created_at.
+  subscribedAt: text("subscribed_at")
+    .default(sql`(datetime('now'))`)
+    .notNull(),
+});
+
+export type Subscriber = typeof subscribers.$inferSelect;
+export type NewSubscriber = typeof subscribers.$inferInsert;
+
+export const appSettings = sqliteTable("app_settings", {
+  key: text("key").primaryKey(),
+  value: text("value"),
+  updatedAt: text("updated_at")
+    .default(sql`(datetime('now'))`)
+    .notNull(),
+});
+
+export type AppSetting = typeof appSettings.$inferSelect;
+
 export const adminUsers = sqliteTable("admin_users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   email: text("email").notNull().unique(),

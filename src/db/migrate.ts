@@ -68,6 +68,22 @@ const CREATE_ADMIN_USERS = `
   );
 `;
 
+const CREATE_SUBSCRIBERS = `
+  CREATE TABLE IF NOT EXISTS subscribers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT NOT NULL UNIQUE,
+    subscribed_at TEXT DEFAULT (datetime('now')) NOT NULL
+  );
+`;
+
+const CREATE_APP_SETTINGS = `
+  CREATE TABLE IF NOT EXISTS app_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT,
+    updated_at TEXT DEFAULT (datetime('now')) NOT NULL
+  );
+`;
+
 function categoryOrNull(category: unknown): string | null {
   const value = typeof category === "string" ? category.toLowerCase().trim() : "";
   if (!value || LEGACY_CATEGORIES.includes(value)) return null;
@@ -80,8 +96,10 @@ async function ensureSchema() {
   );
 
   if (!table.rows.length) {
-    await target.executeMultiple(CREATE_POSTS + CREATE_ADMIN_USERS);
-    console.log("✓ Created tables (posts, admin_users)");
+    await target.executeMultiple(
+      CREATE_POSTS + CREATE_ADMIN_USERS + CREATE_SUBSCRIBERS + CREATE_APP_SETTINGS
+    );
+    console.log("✓ Created tables (posts, admin_users, subscribers, app_settings)");
     return;
   }
 
@@ -91,6 +109,10 @@ async function ensureSchema() {
     (row) => String(row.name).toLowerCase() === "category"
   );
   const isNotNull = categoryCol ? Number(categoryCol.notnull) === 1 : false;
+
+  // Tables added after initial release — create them for existing DBs.
+  await target.execute(CREATE_SUBSCRIBERS);
+  await target.execute(CREATE_APP_SETTINGS);
 
   if (!isNotNull) {
     console.log("✓ Schema is up to date (category already nullable)");
