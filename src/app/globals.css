@@ -19,6 +19,33 @@
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
     text-rendering: optimizeLegibility;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Quiet brand touch: golden selection highlight. */
+  ::selection {
+    background: rgba(255, 219, 87, 0.35);
+    color: inherit;
+  }
+
+  /* Slim, theme-aware scrollbar. */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(163, 163, 163, 0.35);
+    border-radius: 8px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(115, 115, 115, 0.6);
+    border: 3px solid transparent;
+    background-clip: content-box;
   }
 
   /* Keep horizontal carousels snappy — vertical smooth only. */
@@ -78,6 +105,21 @@
 
   .ProseMirror img {
     @apply rounded-xl;
+  }
+
+  /* Editorial drop cap on the article's opening paragraph. */
+  .article-content > p:first-of-type::first-letter {
+    float: left;
+    font-family: var(--font-display), Georgia, serif;
+    font-size: 3.4em;
+    line-height: 0.85;
+    padding-right: 0.12em;
+    padding-top: 0.05em;
+    font-weight: 600;
+    color: theme("colors.neutral.900");
+  }
+  .dark .article-content > p:first-of-type::first-letter {
+    color: theme("colors.neutral.100");
   }
 
   .article-content blockquote {

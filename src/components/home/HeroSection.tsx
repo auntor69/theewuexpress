@@ -7,7 +7,7 @@ import { Post } from "@/db/schema";
 import { getCategoryBySlug } from "@/lib/categories";
 import { timeAgo, estimateReadTime, formatViews } from "@/lib/utils";
 import { Eye, Clock } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
+import { useEffect, useCallback, useRef, useState } from "react";
 
 interface HeroSectionProps {
   posts: Post[];
@@ -92,6 +92,32 @@ function HeroCard({
 export function HeroSection({ posts }: HeroSectionProps) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [activeDot, setActiveDot] = useState(0);
+  const parallaxRef = useRef<HTMLDivElement>(null);
+
+  // Scroll parallax on the hero image: a slow, GPU-composited translateY that
+  // makes the lead story feel layered behind the page. rAF-throttled, passive.
+  useEffect(() => {
+    const el = parallaxRef.current;
+    if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let ticking = false;
+    const update = () => {
+      ticking = false;
+      const rect = el.getBoundingClientRect();
+      const progress = Math.min(1, Math.max(0, -rect.top / (rect.height || 1)));
+      el.style.transform = `translate3d(0, ${progress * 28}px, 0) scale(1.08)`;
+    };
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   // Mobile: track horizontal swipes so the dots mirror what's on screen.
   const handleCarouselScroll = useCallback(() => {
@@ -147,9 +173,13 @@ export function HeroSection({ posts }: HeroSectionProps) {
                 {sidePosts.map((post, index) => (
                   <motion.div
                     key={post.id}
-                    initial={{ opacity: 0, x: 24 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.1 * (index + 1) }}
+                    initial={{ opacity: 0, x: 24, filter: "blur(6px)" }}
+                    animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+                    transition={{
+                      delay: 0.12 * (index + 1),
+                      duration: 0.7,
+                      ease: [0.22, 1, 0.36, 1],
+                    }}
                     data-carousel-slide
                     className="w-[78%] sm:w-[46%] flex-shrink-0 snap-start"
                   >
@@ -180,20 +210,27 @@ export function HeroSection({ posts }: HeroSectionProps) {
         {/* Desktop: main story + stacked side cards */}
         <div className="hidden lg:grid grid-cols-3 gap-4">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 26, filter: "blur(8px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             className="col-span-2"
           >
             <Link href={`/article/${mainPost.slug}`} className="group block">
               <div className="relative aspect-[16/9] rounded-2xl overflow-hidden">
-                <Image
-                  src={mainPost.coverImage}
-                  alt={mainPost.title}
-                  fill
-                  sizes="(min-width: 1280px) 860px, 66vw"
-                  className="object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-butter will-change-transform"
-                  priority
-                />
+                <div
+                  ref={parallaxRef}
+                  className="absolute inset-0 will-change-transform"
+                  style={{ transform: "scale(1.08)" }}
+                >
+                  <Image
+                    src={mainPost.coverImage}
+                    alt={mainPost.title}
+                    fill
+                    sizes="(min-width: 1280px) 860px, 66vw"
+                    className="object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-butter will-change-transform"
+                    priority
+                  />
+                </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
                   {mainCategory && (
@@ -232,9 +269,13 @@ export function HeroSection({ posts }: HeroSectionProps) {
               return (
                 <motion.div
                   key={post.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * (index + 1) }}
+                  initial={{ opacity: 0, y: 24, filter: "blur(6px)" }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  transition={{
+                    delay: 0.14 * (index + 1),
+                    duration: 0.7,
+                    ease: [0.22, 1, 0.36, 1]
+                  }}
                 >
                   <Link href={`/article/${post.slug}`} className="group block">
                     <div className="relative aspect-[16/9] rounded-2xl overflow-hidden">

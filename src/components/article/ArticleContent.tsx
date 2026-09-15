@@ -95,22 +95,30 @@ export function ArticleContent({ post }: ArticleContentProps) {
 
   return (
     <article className="pt-20">
-      <div className="relative w-full aspect-[21/9] sm:aspect-[3/1]">
-        <Image
-          src={post.coverImage}
-          alt={post.title}
-          fill
-          className="object-cover"
-          priority
-        />
+      <div className="relative w-full aspect-[21/9] sm:aspect-[3/1] overflow-hidden">
+        <motion.div
+          initial={{ scale: 1.06, opacity: 0.6 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+          className="absolute inset-0"
+        >
+          <Image
+            src={post.coverImage}
+            alt={post.title}
+            fill
+            className="object-cover"
+            priority
+          />
+        </motion.div>
         <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-neutral-950 via-transparent to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent" />
       </div>
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 -mt-20 relative z-10">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 24, filter: "blur(6px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
         >
           <Link
             href="/"

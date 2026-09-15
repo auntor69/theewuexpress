@@ -5,6 +5,14 @@ import Link from "next/link";
 import { m as motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import { categories } from "@/lib/categories";
+import { Flame, BookOpen, CalendarDays, Lightbulb } from "lucide-react";
+
+const categoryIcons: Record<string, typeof Flame> = {
+  "campus-heat": Flame,
+  stories: BookOpen,
+  events: CalendarDays,
+  "did-you-know": Lightbulb,
+};
 
 export function CategoryBar() {
   const { resolvedTheme } = useTheme();
@@ -21,6 +29,7 @@ export function CategoryBar() {
         <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
           {categories.map((cat, index) => {
             const isHovered = hoveredSlug === cat.slug;
+            const Icon = categoryIcons[cat.slug];
 
             const style = !mounted
               ? undefined
@@ -33,17 +42,22 @@ export function CategoryBar() {
             return (
               <motion.div
                 key={cat.slug}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.05 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  delay: index * 0.06,
+                  duration: 0.5,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
               >
                 <Link
                   href={`/category/${cat.slug}`}
-                  className="flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-sm whitespace-nowrap hover:scale-105 transition-all duration-200 shadow-lg"
+                  className="flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-sm whitespace-nowrap shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 ease-butter"
                   style={style}
                   onMouseEnter={() => setHoveredSlug(cat.slug)}
                   onMouseLeave={() => setHoveredSlug(null)}
                 >
+                  {Icon && <Icon size={15} strokeWidth={2.25} />}
                   {cat.name}
                 </Link>
               </motion.div>
