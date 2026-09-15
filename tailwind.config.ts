@@ -21,6 +21,11 @@ const config: Config = {
           "serif",
         ],
       },
+      transitionTimingFunction: {
+        // One shared deceleration curve so every hover on the site moves
+        // with the same physical feel instead of default linear-ish easing.
+        butter: "cubic-bezier(0.22, 1, 0.36, 1)",
+      },
       typography: {
         DEFAULT: {
           css: {

@@ -55,7 +55,7 @@ function HeroCard({
           alt={post.title}
           fill
           sizes={sizes}
-          className="object-cover group-hover:scale-105 transition-transform duration-700"
+          className="object-cover group-hover:scale-[1.05] transition-transform duration-700 ease-butter will-change-transform"
           priority={priority}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
@@ -69,7 +69,7 @@ function HeroCard({
             </span>
           )}
           <h2
-            className={`font-black text-white leading-tight mb-1.5 group-hover:text-red-400 transition-colors line-clamp-2 ${
+            className={`font-black text-white leading-tight mb-1.5 transition-colors duration-300 ease-butter group-hover:text-red-400 line-clamp-2 ${
               titleSize === "lg" ? "text-xl sm:text-2xl" : "text-base"
             }`}
           >
@@ -191,7 +191,7 @@ export function HeroSection({ posts }: HeroSectionProps) {
                   alt={mainPost.title}
                   fill
                   sizes="(min-width: 1280px) 860px, 66vw"
-                  className="object-cover group-hover:scale-105 transition-transform duration-700"
+                  className="object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-butter will-change-transform"
                   priority
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -204,7 +204,7 @@ export function HeroSection({ posts }: HeroSectionProps) {
                       {mainCategory.name}
                     </span>
                   )}
-                  <h1 className="text-2xl sm:text-4xl font-black text-white leading-tight mb-2 group-hover:text-red-400 transition-colors">
+                  <h1 className="text-2xl sm:text-4xl font-black text-white leading-tight mb-2 transition-colors duration-300 ease-butter group-hover:text-red-400">
                     {mainPost.title}
                   </h1>
                   <p className="text-neutral-300 text-sm sm:text-base line-clamp-2 mb-3">
@@ -243,7 +243,7 @@ export function HeroSection({ posts }: HeroSectionProps) {
                         alt={post.title}
                         fill
                         sizes="33vw"
-                        className="object-cover group-hover:scale-105 transition-transform duration-700"
+                        className="object-cover group-hover:scale-[1.05] transition-transform duration-700 ease-butter will-change-transform"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                       <div className="absolute bottom-0 left-0 right-0 p-4">
@@ -255,7 +255,7 @@ export function HeroSection({ posts }: HeroSectionProps) {
                             {category.name}
                           </span>
                         )}
-                        <h2 className="text-lg font-bold text-white leading-tight group-hover:text-red-400 transition-colors line-clamp-2">
+                        <h2 className="text-lg font-bold text-white leading-tight transition-colors duration-300 ease-butter group-hover:text-red-400 line-clamp-2">
                           {post.title}
                         </h2>
                         <div className="mt-1">

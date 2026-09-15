@@ -51,12 +51,12 @@ export function PostCard({ post, index, variant = "default" }: PostCardProps) {
               alt={post.title}
               fill
               sizes="80px"
-              className="object-cover group-hover:scale-110 transition-transform duration-500"
+              className="object-cover group-hover:scale-110 transition-transform duration-500 ease-butter will-change-transform"
             />
           </div>
           <div className="flex-1 min-w-0">
             {categoryChip}
-            <h3 className="font-display font-semibold text-sm leading-snug line-clamp-2 group-hover:text-red-500 transition-colors dark:text-white">
+            <h3 className="font-display font-semibold text-sm leading-snug line-clamp-2 transition-colors duration-300 ease-butter group-hover:text-red-500 dark:text-white">
               {post.title}
             </h3>
             <div className="flex items-center gap-2 text-neutral-500 text-xs mt-1">
@@ -88,12 +88,12 @@ export function PostCard({ post, index, variant = "default" }: PostCardProps) {
               alt={post.title}
               fill
               sizes="(min-width: 640px) 256px, 100vw"
-              className="object-cover group-hover:scale-105 transition-transform duration-700"
+              className="object-cover group-hover:scale-[1.06] transition-transform duration-700 ease-butter will-change-transform"
             />
           </div>
           <div className="flex-1">
             {categoryChip}
-            <h3 className="font-display text-xl font-semibold leading-snug group-hover:text-red-500 transition-colors dark:text-white">
+            <h3 className="font-display text-xl font-semibold leading-snug transition-colors duration-300 ease-butter group-hover:text-red-500 dark:text-white">
               {post.title}
             </h3>
             <p className="text-neutral-500 dark:text-neutral-400 text-sm mt-2 line-clamp-2">
@@ -124,15 +124,15 @@ export function PostCard({ post, index, variant = "default" }: PostCardProps) {
       transition={{ delay: stagger }}
     >
       <Link href={`/article/${post.slug}`} className="group block rounded-2xl">
-        <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-3.5 shadow-sm group-hover:shadow-xl group-hover:shadow-neutral-900/5 dark:group-hover:shadow-black/20 transition-shadow duration-500">
+        <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-3.5 shadow-sm group-hover:shadow-xl group-hover:shadow-neutral-900/10 dark:group-hover:shadow-black/30 transition-shadow duration-500 ease-butter">
           <Image
             src={post.coverImage}
             alt={post.title}
             fill
             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-            className="object-cover group-hover:scale-105 transition-transform duration-700"
+            className="object-cover group-hover:scale-[1.06] transition-transform duration-700 ease-butter will-change-transform"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-butter" />
           {post.featured && (
             <div className="absolute top-3 right-3">
               <span className="px-2 py-1 bg-white/95 dark:bg-neutral-900/90 text-neutral-900 dark:text-white text-[10px] font-bold rounded-full uppercase tracking-wider backdrop-blur">
@@ -143,7 +143,7 @@ export function PostCard({ post, index, variant = "default" }: PostCardProps) {
         </div>
         <div className="px-0.5">
           {categoryChip}
-          <h3 className="font-display text-lg font-semibold leading-snug mt-1.5 group-hover:text-red-500 transition-colors dark:text-white line-clamp-2">
+          <h3 className="font-display text-lg font-semibold leading-snug mt-1.5 transition-colors duration-300 ease-butter group-hover:text-red-500 dark:text-white line-clamp-2">
             {post.title}
           </h3>
           <p className="text-neutral-500 dark:text-neutral-400 text-sm mt-1.5 line-clamp-2">
