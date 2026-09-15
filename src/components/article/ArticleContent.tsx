@@ -35,9 +35,13 @@ export function ArticleContent({ post }: ArticleContentProps) {
         ALLOWED_TAGS: [
           "p", "h1", "h2", "h3", "h4", "h5", "h6",
           "blockquote", "ul", "ol", "li", "a", "strong", "em",
+          "u", "s", "mark", "code", "pre", "sub", "sup",
           "img", "br", "hr", "span", "div", "figure", "figcaption",
         ],
-        ALLOWED_ATTR: ["href", "src", "alt", "title", "class", "target", "rel"],
+        ALLOWED_ATTR: [
+          "href", "src", "alt", "title", "class", "target", "rel",
+          "style", "start", "loading",
+        ],
       }),
     [post.content]
   );
@@ -106,7 +110,8 @@ export function ArticleContent({ post }: ArticleContentProps) {
 
           {category && (
             <span
-              className={`inline-block px-3 py-1 rounded-full text-xs font-bold text-white bg-gradient-to-r ${category.color} mb-4`}
+              className="inline-block px-3 py-1 rounded-full text-xs font-bold text-white mb-4"
+              style={{ backgroundColor: category.color }}
             >
               {category.name}
             </span>

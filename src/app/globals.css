@@ -29,6 +29,20 @@
 }
 
 @layer components {
+  /* Tiptap editor */
+  .ProseMirror {
+    @apply outline-none;
+  }
+
+  .ProseMirror p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    @apply text-neutral-400 dark:text-neutral-500 float-left h-0 pointer-events-none;
+  }
+
+  .ProseMirror img {
+    @apply rounded-xl;
+  }
+
   .article-content blockquote {
     @apply relative;
   }

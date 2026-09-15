@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   FileText,
   PlusCircle,
   LogOut,
   ArrowLeft,
+  Database,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -21,6 +23,18 @@ const navItems = [
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  // Live answer to "where is my data stored?" — reported by the server, not hardcoded.
+  const [dbInfo, setDbInfo] = useState<{
+    databaseLabel: string;
+    isRemote: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/db-info")
+      .then((res) => (res.ok ? res.json() : null))
+      .then(setDbInfo)
+      .catch(() => setDbInfo(null));
+  }, []);
 
   return (
     <aside className="w-64 bg-neutral-950 text-white min-h-screen flex flex-col fixed left-0 top-0">
@@ -75,6 +89,35 @@ export function AdminSidebar() {
           <LogOut size={18} />
           Sign Out
         </button>
+
+        {dbInfo && (
+          <div
+            className="mt-3 flex items-start gap-2.5 rounded-xl bg-white/5 px-3 py-3"
+            title={
+              dbInfo.isRemote
+                ? "All posts and images are stored in your Turso cloud database"
+                : "Heads up: this environment is not connected to Turso — data lives in a local SQLite file"
+            }
+          >
+            <Database
+              size={16}
+              className={cn(
+                "mt-0.5 flex-shrink-0",
+                dbInfo.isRemote ? "text-green-400" : "text-amber-400"
+              )}
+            />
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold leading-tight text-neutral-200">
+                {dbInfo.databaseLabel}
+              </p>
+              <p className="mt-0.5 text-[10px] leading-tight text-neutral-500">
+                {dbInfo.isRemote
+                  ? "All posts are stored here"
+                  : "Connect Turso to keep data safe"}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </aside>
   );

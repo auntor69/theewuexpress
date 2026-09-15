@@ -4,6 +4,7 @@ import { posts } from "@/db/schema";
 import { desc, sql } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { slugify, escapeLikePattern } from "@/lib/utils";
+import { getCategoryBySlug } from "@/lib/categories";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -17,9 +18,14 @@ export async function GET(request: NextRequest) {
   const offset = (page - 1) * limit;
 
   try {
-    const conditions = [sql`${posts.published} = 1`];
+    // "uncategorized" is a virtual filter: posts whose category has not been assigned yet.
+    const uncategorized = category === "uncategorized";
 
-    if (category) {
+    const conditions = [
+      sql`${posts.published} = 1${uncategorized ? sql` AND ${posts.category} IS NULL` : sql``}`,
+    ];
+
+    if (category && !uncategorized) {
       conditions.push(sql`${posts.category} = ${category}`);
     }
 
@@ -87,6 +93,22 @@ export async function POST(request: NextRequest) {
     if (!body.title || typeof body.title !== 'string' || !body.title.trim()) {
       return NextResponse.json({ error: "Title is required" }, { status: 400 });
     }
+
+    // Category is optional; if provided it must be a known slug (or legacy data to keep as-is).
+    let category: string | null = null;
+    if (body.category) {
+      if (typeof body.category !== 'string') {
+        return NextResponse.json({ error: "Invalid category" }, { status: 400 });
+      }
+      if (!getCategoryBySlug(body.category)) {
+        return NextResponse.json(
+          { error: `Unknown category '${body.category}'` },
+          { status: 400 }
+        );
+      }
+      category = body.category;
+    }
+
     let slug = slugify(body.title);
 
     if (!slug) {
@@ -108,7 +130,7 @@ export async function POST(request: NextRequest) {
         content: body.content,
         coverImage: body.coverImage,
         images: JSON.stringify(body.images || []),
-        category: body.category,
+        category,
         tags: JSON.stringify(body.tags || []),
         featured: body.featured || false,
         editorPick: body.editorPick || false,

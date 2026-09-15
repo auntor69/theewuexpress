@@ -39,12 +39,11 @@ export function CategoryBar() {
               >
                 <Link
                   href={`/category/${cat.slug}`}
-                  className="flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-sm whitespace-nowrap hover:scale-105 transition-all duration-200 shadow-lg bg-neutral-300 dark:bg-neutral-700"
+                  className="flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-sm whitespace-nowrap hover:scale-105 transition-all duration-200 shadow-lg"
                   style={style}
                   onMouseEnter={() => setHoveredSlug(cat.slug)}
                   onMouseLeave={() => setHoveredSlug(null)}
                 >
-                  <span className="text-lg">{cat.emoji}</span>
                   {cat.name}
                 </Link>
               </motion.div>

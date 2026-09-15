@@ -50,14 +50,22 @@ export default async function ArticlePage({ params }: PageProps) {
 
   if (!post) notFound();
 
-  const relatedPosts = await db
-    .select()
-    .from(posts)
-    .where(
-      sql`${posts.published} = 1 AND ${posts.id} != ${post.id} AND ${posts.category} = ${post.category}`
-    )
-    .orderBy(desc(posts.views))
-    .limit(3);
+  // Related posts: same category when possible, otherwise top editor picks.
+  const relatedPosts = post.category
+    ? await db
+        .select()
+        .from(posts)
+        .where(
+          sql`${posts.published} = 1 AND ${posts.id} != ${post.id} AND ${posts.category} = ${post.category}`
+        )
+        .orderBy(desc(posts.views))
+        .limit(3)
+    : await db
+        .select()
+        .from(posts)
+        .where(sql`${posts.published} = 1 AND ${posts.id} != ${post.id}`)
+        .orderBy(desc(posts.views))
+        .limit(3);
 
   return (
     <main className="min-h-screen">

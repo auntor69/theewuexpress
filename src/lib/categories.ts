@@ -3,46 +3,35 @@ export const categories = [
     slug: "campus-heat",
     name: "Campus Heat",
     description: "The pulse of university life",
-    emoji: "🔥",
-    color: "from-orange-500 to-red-500",
-    darkColor: "dark:from-orange-500 dark:to-red-500",
-  },
-  {
-    slug: "confessions",
-    name: "Confessions",
-    description: "Raw, honest, unfiltered",
-    emoji: "🤫",
-    color: "from-purple-500 to-pink-500",
-    darkColor: "dark:from-purple-500 dark:to-pink-500",
+    color: "#ea580c",
+    softBg: "rgba(234, 88, 12, 0.12)",
   },
   {
     slug: "stories",
     name: "Stories",
     description: "Tales that define us",
-    emoji: "📖",
-    color: "from-blue-500 to-cyan-500",
-    darkColor: "dark:from-blue-500 dark:to-cyan-500",
-  },
-  {
-    slug: "real-talk",
-    name: "Real Talk",
-    description: "No filter, no pretense",
-    emoji: "💬",
-    color: "from-green-500 to-emerald-500",
-    darkColor: "dark:from-green-500 dark:to-emerald-500",
+    color: "#0891b2",
+    softBg: "rgba(8, 145, 178, 0.12)",
   },
   {
     slug: "events",
     name: "Events",
     description: "Don't miss out",
-    emoji: "🎉",
-    color: "from-yellow-500 to-orange-500",
-    darkColor: "dark:from-yellow-500 dark:to-orange-500",
+    color: "#d97706",
+    softBg: "rgba(217, 119, 6, 0.14)",
+  },
+  {
+    slug: "did-you-know",
+    name: "Did You Know?",
+    description: "Facts and finds about your campus",
+    color: "#7c3aed",
+    softBg: "rgba(124, 58, 237, 0.12)",
   },
 ] as const;
 
 export type CategorySlug = (typeof categories)[number]["slug"];
 
-export function getCategoryBySlug(slug: string) {
+export function getCategoryBySlug(slug: string | null | undefined) {
+  if (!slug) return undefined;
   return categories.find((c) => c.slug === slug);
 }

@@ -14,8 +14,15 @@ interface PageProps {
   params: { slug: string };
 }
 
+const UNCATEGORIZED = {
+  slug: "uncategorized",
+  name: "Uncategorized",
+  description: "Stories waiting to be sorted",
+} as const;
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const category = getCategoryBySlug(params.slug);
+  const isUncategorized = params.slug === UNCATEGORIZED.slug;
+  const category = isUncategorized ? UNCATEGORIZED : getCategoryBySlug(params.slug);
   if (!category) return { title: "Not Found" };
 
   return {
@@ -25,13 +32,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function CategoryPage({ params }: PageProps) {
-  const category = getCategoryBySlug(params.slug);
+  const isUncategorized = params.slug === UNCATEGORIZED.slug;
+  const category = isUncategorized ? UNCATEGORIZED : getCategoryBySlug(params.slug);
   if (!category) notFound();
 
   const categoryPosts = await db
     .select()
     .from(posts)
-    .where(sql`${posts.published} = 1 AND ${posts.category} = ${params.slug}`)
+    .where(
+      isUncategorized
+        ? sql`${posts.published} = 1 AND ${posts.category} IS NULL`
+        : sql`${posts.published} = 1 AND ${posts.category} = ${params.slug}`
+    )
     .orderBy(desc(posts.createdAt))
     .limit(6);
 
@@ -44,7 +56,6 @@ export default async function CategoryPage({ params }: PageProps) {
             <div
               className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl font-bold text-lg mb-4 bg-[#08216e] text-white dark:bg-[#f5f5f5] dark:text-[#07226b]"
             >
-              <span className="text-2xl">{category.emoji}</span>
               {category.name}
             </div>
             <p className="text-neutral-500 dark:text-neutral-400 text-lg">

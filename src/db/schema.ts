@@ -9,7 +9,8 @@ export const posts = sqliteTable("posts", {
   content: text("content").notNull(),
   coverImage: text("cover_image").notNull(),
   images: text("images").default("[]"),
-  category: text("category").notNull(),
+  // Nullable: posts can be created without a category and assigned later from the admin panel.
+  category: text("category"),
   tags: text("tags").default("[]"),
   views: integer("views").default(0).notNull(),
   featured: integer("featured", { mode: "boolean" }).default(false).notNull(),

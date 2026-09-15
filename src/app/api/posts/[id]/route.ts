@@ -4,6 +4,7 @@ import { posts } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { slugify } from "@/lib/utils";
+import { getCategoryBySlug } from "@/lib/categories";
 
 export async function GET(
   request: NextRequest,
@@ -72,6 +73,20 @@ export async function PUT(
       }
     }
 
+    // Category is optional: null (or empty string) clears it → back to uncategorized.
+    let category: string | null | undefined;
+    if (body.category === null || body.category === "") {
+      category = null;
+    } else if (body.category) {
+      if (typeof body.category !== 'string' || !getCategoryBySlug(body.category)) {
+        return NextResponse.json(
+          { error: `Unknown category '${body.category}'` },
+          { status: 400 }
+        );
+      }
+      category = body.category;
+    }
+
     const updatedPost = await db
       .update(posts)
       .set({
@@ -81,7 +96,7 @@ export async function PUT(
         content: body.content,
         coverImage: body.coverImage,
         images: body.images ? JSON.stringify(body.images) : undefined,
-        category: body.category,
+        category,
         tags: body.tags ? JSON.stringify(body.tags) : undefined,
         featured: body.featured,
         editorPick: body.editorPick,

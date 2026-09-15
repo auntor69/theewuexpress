@@ -33,7 +33,7 @@ export function Footer() {
                   href={`/category/${cat.slug}`}
                   className="text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors text-sm"
                 >
-                  {cat.emoji} {cat.name}
+                  {cat.name}
                 </Link>
               ))}
             </div>

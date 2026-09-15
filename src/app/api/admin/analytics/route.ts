@@ -34,11 +34,17 @@ export async function GET() {
       .from(posts)
       .groupBy(posts.category);
 
+    const uncategorized = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(posts)
+      .where(sql`${posts.category} IS NULL`);
+
     return NextResponse.json({
       totalPosts: totalPosts[0]?.count || 0,
       totalViews: totalViews[0]?.total || 0,
       topPosts,
       categoryStats,
+      uncategorizedCount: uncategorized[0]?.count || 0,
     });
   } catch (error) {
     console.error("Error fetching analytics:", error);

@@ -133,7 +133,7 @@ export function Navbar() {
                   href={`/category/${cat.slug}`}
                   className="text-2xl font-bold text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white transition-colors"
                 >
-                  {cat.emoji} {cat.name}
+                  {cat.name}
                 </Link>
               ))}
             </div>

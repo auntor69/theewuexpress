@@ -17,6 +17,18 @@ interface PostCardProps {
 export function PostCard({ post, index, variant = "default" }: PostCardProps) {
   const category = getCategoryBySlug(post.category);
 
+  const categoryChip = category ? (
+    <span
+      className="inline-block px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
+      style={{
+        color: category.color,
+        backgroundColor: category.softBg,
+      }}
+    >
+      {category.name}
+    </span>
+  ) : null;
+
   if (variant === "compact") {
     return (
       <motion.div
@@ -38,11 +50,7 @@ export function PostCard({ post, index, variant = "default" }: PostCardProps) {
             />
           </div>
           <div className="flex-1 min-w-0">
-            {category && (
-              <span className="text-[10px] font-bold uppercase tracking-wider text-red-500">
-                {category.name}
-              </span>
-            )}
+            {categoryChip}
             <h3 className="font-bold text-sm leading-tight line-clamp-2 group-hover:text-red-500 transition-colors dark:text-white">
               {post.title}
             </h3>
@@ -78,13 +86,7 @@ export function PostCard({ post, index, variant = "default" }: PostCardProps) {
             />
           </div>
           <div className="flex-1">
-            {category && (
-              <span
-                className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold text-white bg-gradient-to-r ${category.color} mb-2`}
-              >
-                {category.name}
-              </span>
-            )}
+            {categoryChip}
             <h3 className="text-xl font-bold leading-tight group-hover:text-red-500 transition-colors dark:text-white">
               {post.title}
             </h3>
@@ -133,12 +135,8 @@ export function PostCard({ post, index, variant = "default" }: PostCardProps) {
           )}
         </div>
         <div>
-          {category && (
-            <span className="text-[10px] font-bold uppercase tracking-wider text-red-500">
-              {category.name}
-            </span>
-          )}
-          <h3 className="text-lg font-bold leading-tight mt-1 group-hover:text-red-500 transition-colors dark:text-white line-clamp-2">
+          {categoryChip}
+          <h3 className="text-lg font-bold leading-tight mt-1.5 group-hover:text-red-500 transition-colors dark:text-white line-clamp-2">
             {post.title}
           </h3>
           <p className="text-neutral-500 dark:text-neutral-400 text-sm mt-1 line-clamp-2">

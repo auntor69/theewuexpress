@@ -1,7 +1,11 @@
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
-import { posts, adminUsers } from "./schema";
+import { config as loadEnv } from "dotenv";
 import bcrypt from "bcryptjs";
+import { posts, adminUsers } from "./schema";
+
+loadEnv({ path: ".env.local", quiet: true });
+loadEnv({ quiet: true });
 
 const client = createClient({
   url: process.env.DATABASE_URL || "file:local.db",
@@ -29,41 +33,20 @@ const samplePosts = [
     views: 2847,
   },
   {
-    title: "Confessions: I Failed 3 Courses and Still Graduated",
-    slug: "confessions-failed-3-courses-graduated",
-    caption: "A raw, honest account of academic failure and coming back stronger.",
-    content: `<p>Let me start by saying this: failing doesn't make you a failure. It took me four semesters and a lot of tears to understand that.</p>
-<blockquote>"When I saw that F on my transcript for the first time, I locked myself in my room for two days." — The Author</blockquote>
-<p>I was the kid who always got good grades in school. University was supposed to be my launchpad. Instead, it became my wake-up call.</p>
-<p>The first course I failed was Calculus II. Not because I couldn't understand it, but because I stopped trying. The freedom of university life consumed me — late nights, new friends, the illusion that there was always tomorrow.</p>
-<p>By my third semester, I had failed two more courses. My parents were devastated. My advisor suggested I consider "alternative paths." But something inside me refused to quit.</p>
-<blockquote>"The semester I almost dropped out was the semester I found my purpose."</blockquote>
-<p>I started over. Not from scratch, but from truth. I acknowledged what went wrong, sought help, and showed up every single day. It took an extra year, but I walked across that stage with my head held high.</p>
-<p>If you're reading this and you're in that dark place — keep going. Your transcript doesn't define your story.</p>`,
-    coverImage: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=1200&h=800&fit=crop",
-    category: "confessions",
-    tags: JSON.stringify(["personal", "academic", "motivation"]),
+    title: "The Professor Who Teaches Without a Syllabus",
+    slug: "the-professor-who-teaches-without-a-syllabus",
+    caption: "One EWU faculty member ditched the script — and his classes filled up overnight.",
+    content: `<p>Walk into Room 402 on a Tuesday and you won't find a lecture plan on the board. You'll find a question.</p>
+<blockquote>"I don't teach subjects. I teach people how to think about subjects." — the professor, when we asked why</blockquote>
+<p>His approach is simple: every semester, students vote on the topics. The syllabus writes itself, week by week, based on what the class actually wants to understand.</p>
+<p>Attendance? Nearly perfect. Grades? Better than department average. And the waiting list to get into his section keeps growing every semester.</p>
+<p>Not everyone is convinced. Some faculty argue structure matters. But the students in Room 402 say they've never been more engaged.</p>`,
+    coverImage: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=1200&h=800&fit=crop",
+    category: "campus-heat",
+    tags: JSON.stringify(["faculty", "teaching", "campus"]),
     featured: true,
     editorPick: false,
-    views: 5231,
-  },
-  {
-    title: "Why EWU's Food Court Needs a Revolution",
-    slug: "ewu-food-court-needs-revolution",
-    caption: "We surveyed 200 students. The results will make you hungry for change.",
-    content: `<p>Let's be honest: the food court situation at EWU is... complicated. Between the overpriced samosas and the mystery meat in the cafeteria, students deserve better.</p>
-<p>We surveyed 200 students across all departments, and the numbers paint a clear picture:</p>
-<ul><li>78% said they're unsatisfied with food quality</li><li>65% bring food from home at least 3 times a week</li><li>89% would pay more for better options</li></ul>
-<blockquote>"I've been eating the same chicken roll for 4 years. Not by choice." — Final Year Student</blockquote>
-<p>But it's not all bad news. The new juice bar near the library has been a hit, and the student-run bake sales on Thursdays have become a campus institution.</p>
-<p>What EWU needs is not just better food — it needs a food culture. A space where eating isn't just fuel, but an experience. Other universities have farm-to-table programs, student-run cafes, and diverse cuisines. Why can't we?</p>
-<p>The administration has promised changes. We'll be watching.</p>`,
-    coverImage: "https://images.unsplash.com/photo-1567521464027-f127ff144326?w=1200&h=800&fit=crop",
-    category: "real-talk",
-    tags: JSON.stringify(["food", "campus", "survey"]),
-    featured: false,
-    editorPick: true,
-    views: 3456,
+    views: 3120,
   },
   {
     title: "The Art of Surviving Finals Week",
@@ -85,7 +68,7 @@ const samplePosts = [
     category: "stories",
     tags: JSON.stringify(["finals", "study", "tips"]),
     featured: false,
-    editorPick: false,
+    editorPick: true,
     views: 1893,
   },
   {
@@ -100,8 +83,8 @@ const samplePosts = [
 <p>Meet some of the artists shaping EWU's sound:</p>
 <p><strong>Resonance</strong> — A four-piece band that plays everything from Bangla rock to indie folk. Their campus concert last spring drew over 300 students.</p>
 <p><strong>DJ Cipher</strong> — Known for his late-night SoundCloud mixes, he's become the go-to DJ for department events.</p>
-<p><strong>Verse & Vibe</strong> — A poetry collective that merges spoken word with ambient music. Their monthly open mic nights have become a campus staple.</p>
-<blockquote>"Music is how we process this chaos called university life." — Verse & Vibe Founder</blockquote>
+<p><strong>Verse &amp; Vibe</strong> — A poetry collective that merges spoken word with ambient music. Their monthly open mic nights have become a campus staple.</p>
+<blockquote>"Music is how we process this chaos called university life." — Verse &amp; Vibe Founder</blockquote>
 <p>The scene may be underground, but it deserves the spotlight.</p>`,
     coverImage: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=1200&h=800&fit=crop",
     category: "stories",
@@ -132,60 +115,82 @@ const samplePosts = [
     views: 6789,
   },
   {
-    title: "Dear Freshman: Letters from Seniors Who Survived",
-    slug: "dear-freshman-letters-from-seniors",
-    caption: "Honest, emotional, sometimes funny letters to incoming students.",
-    content: `<p>Every senior has something they wish they knew as a freshman. We asked graduating students to write one letter to their younger selves. Here are the ones that hit different.</p>
-<hr/>
-<blockquote>"Dear Freshman Me,<br/><br/>Stop trying to impress everyone. The friends who matter will find you. Also, that crush in your Intro to Business class? Yeah, don't bother.<br/><br/>— Tania, English Department"</blockquote>
-<hr/>
-<blockquote>"Dear Freshman Me,<br/><br/>Go to office hours. Seriously. The professors are actually cool when you talk to them one-on-one. Also, join at least one club. The Photography Club changed my life.<br/><br/>— Karim, CSE Department"</blockquote>
-<hr/>
-<blockquote>"Dear Freshman Me,<br/><br/>You're going to fail. Not just exams — you're going to fail at friendships, at time management, at staying awake in 8 AM classes. And that's okay. Failure is just education wearing a different outfit.<br/><br/>— Priya, Pharmacy Department"</blockquote>
-<hr/>
-<p>These letters remind us that university isn't just about the degree. It's about becoming the person who earns it.</p>
-<blockquote>"Four years ago, I walked through those gates terrified. Today, I walk out transformed." — Anonymous Senior</blockquote>`,
-    coverImage: "https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=1200&h=800&fit=crop",
-    category: "campus-heat",
-    tags: JSON.stringify(["freshman", "seniors", "advice"]),
+    title: "Freshers' Week 2025: Full Schedule Released",
+    slug: "freshers-week-2025-full-schedule",
+    caption: "Club sign-ups, campus tours, and the welcome concert — here's the complete lineup.",
+    content: `<p>Freshers' Week is here, and this year's schedule is the biggest in EWU history.</p>
+<h3>Monday: Orientation &amp; Campus Tours</h3>
+<p>Report to the auditorium at 9 AM. Department orientations run through the morning; campus tours leave every hour from the main gate.</p>
+<h3>Tuesday: Club Fair</h3>
+<p>Over 40 clubs will be set up in the plaza. Bring your student ID — most sign-ups take two minutes.</p>
+<h3>Wednesday: Sports Tryouts</h3>
+<p>Football, cricket, basketball, and table tennis tryouts start at 3 PM at the ground floor courts.</p>
+<h3>Friday: Welcome Concert</h3>
+<p>The week closes with the official welcome concert at 5 PM. Entry is free with a student ID.</p>
+<blockquote>"Freshers' week is how lifelong friendships start. Show up to everything." — Student Affairs</blockquote>`,
+    coverImage: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&h=800&fit=crop",
+    category: "events",
+    tags: JSON.stringify(["freshers", "events", "orientation"]),
     featured: false,
-    editorPick: true,
-    views: 3892,
+    editorPick: false,
+    views: 2450,
   },
   {
-    title: "The Mental Health Crisis Nobody Talks About",
-    slug: "mental-health-crisis-nobody-talks-about",
-    caption: "Breaking the silence on student mental health at EWU.",
-    content: `<p>In a university of thousands, loneliness shouldn't exist. But it does. And it's more common than anyone wants to admit.</p>
-<blockquote>"I sat in a classroom of 60 students and felt completely alone." — Anonymous</blockquote>
-<p>Mental health among university students is a global crisis, and EWU is no exception. We spoke to students, counselors, and faculty to understand the scope of the problem — and what can be done.</p>
-<h3>The Numbers</h3>
-<p>While EWU doesn't publish official mental health statistics, our anonymous survey of 150 students revealed:</p>
-<ul><li>62% reported feeling anxious "most days"</li><li>45% said they've considered seeking professional help but didn't know where to go</li><li>38% said academic pressure is their primary source of stress</li></ul>
-<h3>The Stigma</h3>
-<p>The biggest barrier isn't access — it's stigma. Students fear being judged by peers, labeled by faculty, or dismissed by family.</p>
-<blockquote>"I told my parents I was depressed. They told me to pray more." — Anonymous Student</blockquote>
-<h3>What Needs to Change</h3>
-<p>EWU needs a dedicated, accessible mental health center. Not just a counselor's office tucked away in an admin building, but a visible, welcoming space where seeking help is normalized.</p>
-<p>If you're struggling, you're not alone. And asking for help isn't weakness — it's the bravest thing you can do.</p>`,
-    coverImage: "https://images.unsplash.com/photo-1474631245212-32dc3c8310c6?w=1200&h=800&fit=crop",
-    category: "real-talk",
-    tags: JSON.stringify(["mental-health", "wellbeing", "campus"]),
-    featured: true,
+    title: "Did You Know? EWU's Library Has a 4th Floor Most Students Never Visit",
+    slug: "did-you-know-library-4th-floor",
+    caption: "Silent zones, an archive collection, and the best window view on campus.",
+    content: `<p>Most students stop at the third floor. But climb one more flight of stairs and you'll find something special.</p>
+<h3>The Silent Zone</h3>
+<p>The entire fourth floor is a designated silent zone — no group study, no discussions. Just you, your books, and near-perfect quiet.</p>
+<h3>The Archive Collection</h3>
+<p>Back issues of every university publication since EWU's founding are kept here, along with out-of-print reference texts that aren't in the digital catalog.</p>
+<h3>The Window Seats</h3>
+<p>The east-facing windows have the best view of the lake on campus. Come at 5 PM and watch the sky change colors between pages.</p>
+<blockquote>"I wrote my entire thesis on the fourth floor. It's the best-kept secret at EWU." — Final year, ECE</blockquote>
+<p>Opening hours match the main library. Go before everyone finds out.</p>`,
+    coverImage: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=1200&h=800&fit=crop",
+    category: "did-you-know",
+    tags: JSON.stringify(["library", "campus-facts"]),
+    featured: false,
     editorPick: true,
-    views: 7234,
+    views: 1980,
+  },
+  {
+    title: "Did You Know? Your Student ID Gets You 12 Discounts Off Campus",
+    slug: "did-you-know-student-id-discounts",
+    caption: "From restaurants to bookshops — the full list of places that honor the EWU card.",
+    content: `<p>Your student ID isn't just for the library gate. We called and verified every claim — these 12 places near campus offer real discounts.</p>
+<h3>Food</h3>
+<p>Four restaurants within walking distance offer 10–15% off with a valid EWU ID. Two of them don't advertise it — you have to ask.</p>
+<h3>Books &amp; Printing</h3>
+<p>The photocopy shop opposite Gate 2 gives a flat student rate that's 30% below the listed price. The bookshop on the corner runs a semester-long 20% deal on course texts.</p>
+<h3>Transport &amp; More</h3>
+<p>Two ride-sharing services have standing student promotions, and the gym three blocks away offers a monthly rate nearly half the regular price.</p>
+<blockquote>"I found out about the gym discount in my final semester. Three years too late." — Anonymous senior</blockquote>
+<p>The full verified list is pinned in the student portal. Check it before you pay full price anywhere.</p>`,
+    coverImage: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1200&h=800&fit=crop",
+    category: "did-you-know",
+    tags: JSON.stringify(["discounts", "student-life"]),
+    featured: false,
+    editorPick: false,
+    views: 5310,
   },
 ];
 
 async function seed() {
-  console.log("Seeding database...");
+  const targetUrl = process.env.DATABASE_URL || "file:local.db";
+  const isRemote = /^(libsql|https?):/i.test(targetUrl);
+  console.log(`Seeding database: ${isRemote ? "Turso cloud" : targetUrl}`);
 
   const hashedPassword = await bcrypt.hash("admin123", 10);
-  await db.insert(adminUsers).values({
-    email: "admin@ewuexpress.com",
-    password: hashedPassword,
-    name: "Admin",
-  }).onConflictDoNothing();
+  await db
+    .insert(adminUsers)
+    .values({
+      email: "admin@ewuexpress.com",
+      password: hashedPassword,
+      name: "Admin",
+    })
+    .onConflictDoNothing();
 
   for (const post of samplePosts) {
     await db.insert(posts).values(post).onConflictDoNothing();
@@ -195,4 +200,9 @@ async function seed() {
   console.log("Admin credentials: admin@ewuexpress.com / admin123");
 }
 
-seed().catch(console.error);
+seed()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error("Seed failed:", error);
+    process.exit(1);
+  });

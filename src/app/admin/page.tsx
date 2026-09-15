@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { FileText, Eye, TrendingUp, BarChart3 } from "lucide-react";
+import { FileText, Eye, TrendingUp, FolderPlus } from "lucide-react";
 import { formatViews } from "@/lib/utils";
 import { getCategoryBySlug } from "@/lib/categories";
 import Link from "next/link";
@@ -17,10 +17,11 @@ interface Analytics {
     slug: string;
   }>;
   categoryStats: Array<{
-    category: string;
+    category: string | null;
     count: number;
     totalViews: number;
   }>;
+  uncategorizedCount: number;
 }
 
 export default function AdminDashboard() {
@@ -78,10 +79,10 @@ export default function AdminDashboard() {
             color: "from-red-500 to-orange-500",
           },
           {
-            label: "Categories",
-            value: analytics?.categoryStats?.length || 0,
-            icon: BarChart3,
-            color: "from-purple-500 to-pink-500",
+            label: "Needs Category",
+            value: analytics?.uncategorizedCount || 0,
+            icon: FolderPlus,
+            color: "from-amber-500 to-orange-500",
           },
         ].map((stat, i) => {
           const Icon = stat.icon;
@@ -142,18 +143,20 @@ export default function AdminDashboard() {
             Category Breakdown
           </h2>
           <div className="space-y-4">
-            {analytics?.categoryStats.map((stat) => {
+            {analytics?.categoryStats.map((stat, i) => {
               const cat = getCategoryBySlug(stat.category);
+              const name = cat?.name || "Uncategorized";
+              const color = cat?.color || "#a3a3a3";
               const maxViews = Math.max(
                 ...analytics.categoryStats.map((s) => s.totalViews)
               );
               const percentage = maxViews > 0 ? (stat.totalViews / maxViews) * 100 : 0;
 
               return (
-                <div key={stat.category}>
+                <div key={stat.category || `uncategorized-${i}`}>
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm font-medium dark:text-white">
-                      {cat?.emoji} {cat?.name || stat.category}
+                      {name}
                     </span>
                     <span className="text-xs text-neutral-500">
                       {stat.count} posts &middot; {formatViews(stat.totalViews)}{" "}
@@ -162,8 +165,8 @@ export default function AdminDashboard() {
                   </div>
                   <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-full h-2">
                     <div
-                      className={`h-2 rounded-full bg-gradient-to-r ${cat?.color || "from-neutral-400 to-neutral-500"}`}
-                      style={{ width: `${percentage}%` }}
+                      className="h-2 rounded-full"
+                      style={{ width: `${percentage}%`, backgroundColor: color }}
                     />
                   </div>
                 </div>

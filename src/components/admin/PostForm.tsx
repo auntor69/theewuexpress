@@ -1,15 +1,29 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { categories } from "@/lib/categories";
 import { Post } from "@/db/schema";
 import toast from "react-hot-toast";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
+import { RichTextEditor } from "./RichTextEditor";
 
 interface PostFormProps {
   post?: Post;
   mode: "create" | "edit";
+}
+
+function parseJsonArray(value: unknown): string[] {
+  if (Array.isArray(value)) return value as string[];
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
 }
 
 export function PostForm({ post, mode }: PostFormProps) {
@@ -21,16 +35,84 @@ export function PostForm({ post, mode }: PostFormProps) {
     caption: post?.caption || "",
     content: post?.content || "",
     coverImage: post?.coverImage || "",
-    category: post?.category || categories[0].slug,
+    // Empty string = uncategorized; the admin assigns categories from the dashboard.
+    category: post?.category || "",
     featured: post?.featured || false,
     editorPick: post?.editorPick || false,
     published: post?.published !== false,
-    tags: post?.tags ? (typeof post.tags === "string" ? JSON.parse(post.tags) : post.tags) : [],
+    tags: parseJsonArray(post?.tags),
   });
   const [tagInput, setTagInput] = useState("");
   const [uploadedImages, setUploadedImages] = useState<string[]>(
-    post?.images ? (typeof post.images === "string" ? JSON.parse(post.images) : post.images) : []
+    parseJsonArray(post?.images)
   );
+
+  const handleUploadFiles = useCallback(
+    async (files: FileList): Promise<string[]> => {
+      const formData = new FormData();
+      Array.from(files).forEach((file) => formData.append("files", file));
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Upload failed");
+      }
+      const data = await res.json();
+      return data.urls as string[];
+    },
+    []
+  );
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files?.length) return;
+
+    try {
+      const urls = await handleUploadFiles(files);
+      setUploadedImages((prev) => [...prev, ...urls]);
+
+      if (!form.coverImage && urls.length > 0) {
+        setForm((prev) => ({ ...prev, coverImage: urls[0] }));
+      }
+
+      toast.success("Images uploaded!");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to upload images");
+    } finally {
+      // Allow re-selecting the same file.
+      e.target.value = "";
+    }
+  };
+
+  // Used by the editor's "Insert image" button — uploads via the same flow.
+  const editorImageUpload = useCallback(async (): Promise<string[]> => {
+    return new Promise((resolve) => {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "image/jpeg,image/png,image/gif,image/webp";
+      input.multiple = true;
+      input.onchange = async () => {
+        if (!input.files?.length) {
+          resolve([]);
+          return;
+        }
+        try {
+          const urls = await handleUploadFiles(input.files);
+          setUploadedImages((prev) => [...prev, ...urls]);
+          toast.success("Image inserted!");
+          resolve(urls);
+        } catch (err) {
+          toast.error(err instanceof Error ? err.message : "Upload failed");
+          resolve([]);
+        }
+      };
+      input.oncancel = () => resolve([]);
+      input.click();
+    });
+  }, [handleUploadFiles]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,8 +125,7 @@ export function PostForm({ post, mode }: PostFormProps) {
     setLoading(true);
 
     try {
-      const url =
-        mode === "create" ? "/api/posts" : `/api/posts/${post?.id}`;
+      const url = mode === "create" ? "/api/posts" : `/api/posts/${post?.id}`;
       const method = mode === "create" ? "POST" : "PUT";
 
       const res = await fetch(url, {
@@ -52,49 +133,29 @@ export function PostForm({ post, mode }: PostFormProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
+          category: form.category || null,
           images: uploadedImages,
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to save post");
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to save post");
+      }
 
       toast.success(
-        mode === "create" ? "Post created!" : "Post updated!"
+        mode === "create"
+          ? form.category
+            ? "Post published!"
+            : "Saved! Assign a category from the dashboard when ready."
+          : "Post updated!"
       );
       router.push("/admin/posts");
       router.refresh();
-    } catch {
-      toast.error("Something went wrong");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files?.length) return;
-
-    const formData = new FormData();
-    Array.from(files).forEach((file) => formData.append("files", file));
-
-    try {
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) throw new Error("Upload failed");
-
-      const data = await res.json();
-      setUploadedImages((prev) => [...prev, ...data.urls]);
-
-      if (!form.coverImage && data.urls.length > 0) {
-        setForm((prev) => ({ ...prev, coverImage: data.urls[0] }));
-      }
-
-      toast.success("Images uploaded!");
-    } catch {
-      toast.error("Failed to upload images");
     }
   };
 
@@ -117,11 +178,11 @@ export function PostForm({ post, mode }: PostFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <div className="xl:col-span-2 space-y-6">
           <div>
             <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-              Title *
+              Title <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -136,7 +197,7 @@ export function PostForm({ post, mode }: PostFormProps) {
 
           <div>
             <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-              Caption *
+              Caption <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -151,41 +212,13 @@ export function PostForm({ post, mode }: PostFormProps) {
 
           <div>
             <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-              Cover Image URL *
+              Story <span className="text-red-500">*</span>
             </label>
-            <input
-              type="text"
-              value={form.coverImage}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, coverImage: e.target.value }))
-              }
-              placeholder="https://... or upload below"
-              className="w-full px-4 py-3 bg-neutral-100 dark:bg-neutral-800 rounded-xl outline-none focus:ring-2 focus:ring-red-500 dark:text-white"
-            />
-            {form.coverImage && (
-              <div className="mt-2 relative w-full aspect-video rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={form.coverImage}
-                  alt="Cover preview"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-              Content * (HTML supported)
-            </label>
-            <textarea
-              value={form.content}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, content: e.target.value }))
-              }
-              placeholder="Write your story... HTML tags like <p>, <blockquote>, <h3> are supported."
-              rows={20}
-              className="w-full px-4 py-3 bg-neutral-100 dark:bg-neutral-800 rounded-xl outline-none focus:ring-2 focus:ring-red-500 dark:text-white font-mono text-sm leading-relaxed"
+            <RichTextEditor
+              content={form.content}
+              onChange={(html) => setForm((prev) => ({ ...prev, content: html }))}
+              placeholder="Write your story here — format with the toolbar, no HTML needed."
+              onImageUpload={editorImageUpload}
             />
           </div>
         </div>
@@ -196,7 +229,7 @@ export function PostForm({ post, mode }: PostFormProps) {
 
             <div>
               <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                Category *
+                Category <span className="text-neutral-400 font-normal">(optional)</span>
               </label>
               <select
                 value={form.category}
@@ -205,12 +238,16 @@ export function PostForm({ post, mode }: PostFormProps) {
                 }
                 className="w-full px-4 py-3 bg-white dark:bg-neutral-800 rounded-xl outline-none focus:ring-2 focus:ring-red-500 dark:text-white"
               >
+                <option value="">Uncategorized — assign later</option>
                 {categories.map((cat) => (
                   <option key={cat.slug} value={cat.slug}>
-                    {cat.emoji} {cat.name}
+                    {cat.name}
                   </option>
                 ))}
               </select>
+              <p className="text-xs text-neutral-400 mt-1.5">
+                You can assign categories anytime from the dashboard.
+              </p>
             </div>
 
             <div className="space-y-3">
@@ -305,14 +342,14 @@ export function PostForm({ post, mode }: PostFormProps) {
             </div>
           </div>
 
-          <div className="bg-neutral-50 dark:bg-neutral-800/50 rounded-2xl p-6">
-            <h3 className="font-bold text-lg dark:text-white mb-4">
-              Upload Images
-            </h3>
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+              Cover Image <span className="text-red-500">*</span>
+            </label>
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/gif,image/webp"
               multiple
               onChange={handleImageUpload}
               className="hidden"
@@ -330,7 +367,9 @@ export function PostForm({ post, mode }: PostFormProps) {
                 {uploadedImages.map((url, i) => (
                   <div
                     key={i}
-                    className="relative aspect-square rounded-lg overflow-hidden bg-neutral-200 dark:bg-neutral-700 group"
+                    className={`relative aspect-square rounded-lg overflow-hidden bg-neutral-200 dark:bg-neutral-700 group ${
+                      form.coverImage === url ? "ring-2 ring-red-500" : ""
+                    }`}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -363,12 +402,25 @@ export function PostForm({ post, mode }: PostFormProps) {
                 ))}
               </div>
             )}
+            {form.coverImage && (
+              <div className="mt-3">
+                <p className="text-xs text-neutral-400 mb-1.5">Cover preview</p>
+                <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={form.coverImage}
+                    alt="Cover preview"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="w-full py-3.5 bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 shadow-lg shadow-red-500/20"
           >
             {loading
               ? "Saving..."

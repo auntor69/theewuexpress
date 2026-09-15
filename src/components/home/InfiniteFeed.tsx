@@ -5,6 +5,7 @@ import { useInView } from "react-intersection-observer";
 import { PostCard } from "./PostCard";
 import { Post } from "@/db/schema";
 import { motion } from "framer-motion";
+import { SearchX } from "lucide-react";
 
 interface InfiniteFeedProps {
   initialPosts: Post[];
@@ -66,7 +67,11 @@ export function InfiniteFeed({
   if (!posts.length) {
     return (
       <div className="text-center py-20">
+        <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+          <SearchX size={24} className="text-neutral-400" />
+        </div>
         <p className="text-neutral-500 text-lg">No stories found.</p>
+        <p className="text-neutral-400 text-sm mt-1">Check back soon — new stories drop all the time.</p>
       </div>
     );
   }
