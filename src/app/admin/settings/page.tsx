@@ -162,7 +162,7 @@ export default function SettingsPage() {
               </p>
               <p className="text-neutral-500 dark:text-neutral-400 mt-0.5">
                 Fill in the sender name, your Gmail address and an App Password below,
-                then press Save. Subscriptions already work — they're waiting for this.
+                then press Save. Subscriptions already work — they&apos;re waiting for this.
               </p>
             </>
           )}
