@@ -13,6 +13,14 @@ const config: Config = {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      fontFamily: {
+        display: [
+          "var(--font-display)",
+          "Georgia",
+          "Cambria",
+          "serif",
+        ],
+      },
       typography: {
         DEFAULT: {
           css: {

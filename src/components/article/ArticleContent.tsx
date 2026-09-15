@@ -129,16 +129,19 @@ export function ArticleContent({ post }: ArticleContentProps) {
             </span>
           )}
 
-          <h1 className="text-3xl sm:text-5xl font-black leading-tight tracking-tight dark:text-white mb-4">
+          <h1 className="font-display text-3xl sm:text-5xl font-semibold leading-[1.1] tracking-tight dark:text-white mb-4">
             {post.title}
           </h1>
 
-          <p className="text-lg text-neutral-500 dark:text-neutral-400 mb-6">
+          <p className="text-lg text-neutral-500 dark:text-neutral-400 mb-6 font-display italic">
             {post.caption}
           </p>
 
           <div className="flex items-center justify-between border-y border-neutral-200 dark:border-neutral-800 py-4 mb-10">
             <div className="flex items-center gap-4 text-sm text-neutral-500">
+              <span className="uppercase tracking-wider text-xs font-medium">
+                By The EWU Express Desk
+              </span>
               <span className="flex items-center gap-1">
                 <Clock size={14} />
                 {estimateReadTime(post.content)} min read
@@ -147,9 +150,7 @@ export function ArticleContent({ post }: ArticleContentProps) {
                 <Eye size={14} />
                 {formatViews(post.views)} views
               </span>
-              <span className="hidden sm:block">
-                {formatDate(post.createdAt)}
-              </span>
+              <span className="hidden sm:block">{formatDate(post.createdAt)}</span>
             </div>
 
             <div className="flex items-center gap-2">

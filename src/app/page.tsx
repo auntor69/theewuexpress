@@ -4,6 +4,7 @@ import { desc, eq, sql } from "drizzle-orm";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { BackToTop } from "@/components/layout/BackToTop";
+import { Dateline } from "@/components/layout/Dateline";
 import { HeroSection } from "@/components/home/HeroSection";
 import { CategoryBar } from "@/components/home/CategoryBar";
 import { SectionHeader } from "@/components/home/SectionHeader";
@@ -59,6 +60,8 @@ export default async function HomePage() {
   return (
     <main className="min-h-screen">
       <Navbar />
+      <div className="h-16" aria-hidden />
+      <Dateline />
       <HeroSection posts={featured} />
       <CategoryBar />
 

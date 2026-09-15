@@ -118,7 +118,7 @@ export function HeroSection({ posts }: HeroSectionProps) {
   const mainReadTime = estimateReadTime(mainPost.content);
 
   return (
-    <section className="pt-20 pb-8 px-4 sm:px-6">
+    <section className="pt-6 sm:pt-8 pb-8 px-4 sm:px-6">
       <div className="max-w-7xl mx-auto">
         {/* Mobile: main story + horizontal snap carousel for the rest */}
         <div className="lg:hidden">

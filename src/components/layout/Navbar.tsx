@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { m as motion, AnimatePresence } from "framer-motion";
-import { Search, Menu, X } from "lucide-react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { AnimatePresence, m as motion } from "framer-motion";
+import { Search, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { categories } from "@/lib/categories";
 import { ThemeToggle } from "./ThemeToggle";
@@ -18,8 +18,16 @@ export function Navbar() {
   const pathname = usePathname();
 
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
+    let ticking = false;
+    const handleScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        setIsScrolled(window.scrollY > 24);
+      });
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -39,39 +47,55 @@ export function Navbar() {
     <>
       <nav
         className={cn(
-          "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+          "fixed top-0 left-0 right-0 z-50 bg-white/85 dark:bg-neutral-950/85 backdrop-blur-xl transition-all duration-300",
           isScrolled
-            ? "bg-white/80 dark:bg-neutral-950/80 backdrop-blur-xl shadow-sm"
-            : "bg-transparent"
+            ? "h-14 shadow-sm border-b border-neutral-200 dark:border-neutral-800"
+            : "h-16 border-b border-transparent"
         )}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between h-16">
-            <Link href="/" className="flex items-center gap-2 group">
-              <Image src="/logo.png" alt="EWU Express" width={40} height={40} className="rounded-lg group-hover:scale-110 transition-transform" />
-              <span className="font-black text-sm sm:text-lg tracking-tight dark:text-white">
+        <div className="h-full max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="h-full flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2.5 group">
+              <Image
+                src="/logo.png"
+                alt="EWU Express"
+                width={36}
+                height={36}
+                className="rounded-lg group-hover:scale-105 transition-transform"
+                priority
+              />
+              <span className="font-display font-semibold text-base sm:text-lg tracking-tight dark:text-white leading-none">
                 THE EWU EXPRESS
               </span>
             </Link>
 
-            <div className="hidden md:flex items-center gap-1">
-              {categories.map((cat) => (
-                <Link
-                  key={cat.slug}
-                  href={`/category/${cat.slug}`}
-                  className={cn(
-                    "px-3 py-1.5 rounded-full text-sm font-medium transition-all",
-                    pathname === `/category/${cat.slug}`
-                      ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
-                      : "text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-800"
-                  )}
-                >
-                  {cat.name}
-                </Link>
-              ))}
+            <div className="hidden md:flex items-center gap-0.5">
+              {categories.map((cat) => {
+                const active = pathname === `/category/${cat.slug}`;
+                return (
+                  <Link
+                    key={cat.slug}
+                    href={`/category/${cat.slug}`}
+                    className={cn(
+                      "relative px-3 py-1.5 text-sm font-medium transition-colors",
+                      active
+                        ? "text-neutral-900 dark:text-white"
+                        : "text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
+                    )}
+                  >
+                    {cat.name}
+                    <span
+                      className={cn(
+                        "absolute inset-x-3 -bottom-[1px] h-0.5 rounded-full bg-gradient-to-r from-red-500 to-orange-500 transition-transform duration-200 origin-left",
+                        active ? "scale-x-100" : "scale-x-0"
+                      )}
+                    />
+                  </Link>
+                );
+              })}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <button
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
                 className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
@@ -101,7 +125,7 @@ export function Navbar() {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950"
+              className="border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 overflow-hidden"
             >
               <form onSubmit={handleSearch} className="max-w-2xl mx-auto p-4">
                 <input
@@ -126,15 +150,30 @@ export function Navbar() {
             exit={{ opacity: 0, y: -20 }}
             className="fixed inset-0 z-40 bg-white dark:bg-neutral-950 pt-20"
           >
-            <div className="flex flex-col items-center gap-4 p-8">
-              {categories.map((cat) => (
-                <Link
+            <div className="flex flex-col items-center gap-1 p-8">
+              {categories.map((cat, i) => (
+                <motion.div
                   key={cat.slug}
-                  href={`/category/${cat.slug}`}
-                  className="text-2xl font-bold text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white transition-colors"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.04 * i }}
+                  className="w-full text-center"
                 >
-                  {cat.name}
-                </Link>
+                  <Link
+                    href={`/category/${cat.slug}`}
+                    className={cn(
+                      "block py-3 text-2xl font-display transition-colors",
+                      pathname === `/category/${cat.slug}`
+                        ? "text-red-500"
+                        : "text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white"
+                    )}
+                  >
+                    {cat.name}
+                  </Link>
+                  {i < categories.length - 1 && (
+                    <div className="h-px w-16 mx-auto bg-neutral-200 dark:bg-neutral-800" />
+                    )}
+                </motion.div>
               ))}
             </div>
           </motion.div>

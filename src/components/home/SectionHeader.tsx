@@ -26,7 +26,7 @@ export function SectionHeader({
             <div className="w-1.5 h-9 bg-gradient-to-b from-red-500 to-orange-500 rounded-full" />
           )}
           <div>
-            <h2 className="text-2xl sm:text-3xl font-black tracking-tight dark:text-white">
+            <h2 className="font-display text-2xl sm:text-3xl font-semibold tracking-tight dark:text-white">
               {title}
             </h2>
             {subtitle && (

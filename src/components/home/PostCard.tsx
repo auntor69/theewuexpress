@@ -56,7 +56,7 @@ export function PostCard({ post, index, variant = "default" }: PostCardProps) {
           </div>
           <div className="flex-1 min-w-0">
             {categoryChip}
-            <h3 className="font-bold text-sm leading-tight line-clamp-2 group-hover:text-red-500 transition-colors dark:text-white">
+            <h3 className="font-display font-semibold text-sm leading-snug line-clamp-2 group-hover:text-red-500 transition-colors dark:text-white">
               {post.title}
             </h3>
             <div className="flex items-center gap-2 text-neutral-500 text-xs mt-1">
@@ -93,7 +93,7 @@ export function PostCard({ post, index, variant = "default" }: PostCardProps) {
           </div>
           <div className="flex-1">
             {categoryChip}
-            <h3 className="text-xl font-bold leading-tight group-hover:text-red-500 transition-colors dark:text-white">
+            <h3 className="font-display text-xl font-semibold leading-snug group-hover:text-red-500 transition-colors dark:text-white">
               {post.title}
             </h3>
             <p className="text-neutral-500 dark:text-neutral-400 text-sm mt-2 line-clamp-2">
@@ -123,8 +123,8 @@ export function PostCard({ post, index, variant = "default" }: PostCardProps) {
       viewport={{ once: true }}
       transition={{ delay: stagger }}
     >
-      <Link href={`/article/${post.slug}`} className="group block">
-        <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-3">
+      <Link href={`/article/${post.slug}`} className="group block rounded-2xl">
+        <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-3.5 shadow-sm group-hover:shadow-xl group-hover:shadow-neutral-900/5 dark:group-hover:shadow-black/20 transition-shadow duration-500">
           <Image
             src={post.coverImage}
             alt={post.title}
@@ -135,21 +135,21 @@ export function PostCard({ post, index, variant = "default" }: PostCardProps) {
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           {post.featured && (
             <div className="absolute top-3 right-3">
-              <span className="px-2 py-1 bg-red-500 text-white text-[10px] font-bold rounded-full uppercase tracking-wider">
+              <span className="px-2 py-1 bg-white/95 dark:bg-neutral-900/90 text-neutral-900 dark:text-white text-[10px] font-bold rounded-full uppercase tracking-wider backdrop-blur">
                 Featured
               </span>
             </div>
           )}
         </div>
-        <div>
+        <div className="px-0.5">
           {categoryChip}
-          <h3 className="text-lg font-bold leading-tight mt-1.5 group-hover:text-red-500 transition-colors dark:text-white line-clamp-2">
+          <h3 className="font-display text-lg font-semibold leading-snug mt-1.5 group-hover:text-red-500 transition-colors dark:text-white line-clamp-2">
             {post.title}
           </h3>
-          <p className="text-neutral-500 dark:text-neutral-400 text-sm mt-1 line-clamp-2">
+          <p className="text-neutral-500 dark:text-neutral-400 text-sm mt-1.5 line-clamp-2">
             {post.caption}
           </p>
-          <div className="flex items-center gap-3 text-neutral-400 text-xs mt-2">
+          <div className="flex items-center gap-3 text-neutral-400 text-xs mt-2.5">
             <span className="flex items-center gap-1">
               <Clock size={12} />
               {estimateReadTime(post.content)} min
