@@ -3,8 +3,8 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useInView } from "react-intersection-observer";
 import { PostCard } from "./PostCard";
+import { PostCardSkeleton } from "./PostCardSkeleton";
 import { Post } from "@/db/schema";
-import { m as motion } from "framer-motion";
 import { SearchX } from "lucide-react";
 
 interface InfiniteFeedProps {
@@ -22,12 +22,15 @@ export function InfiniteFeed({
   const [page, setPage] = useState(2);
   const [hasMore, setHasMore] = useState(initialPosts.length >= 6);
   const [loading, setLoading] = useState(false);
+  const [showSkeletons, setShowSkeletons] = useState(false);
 
   const { ref, inView } = useInView({ threshold: 0 });
 
   const loadMore = useCallback(async () => {
     if (loading || !hasMore) return;
     setLoading(true);
+    // Only swap to skeletons after a short beat so fast connections never see a flash.
+    const skeletonTimer = setTimeout(() => setShowSkeletons(true), 350);
 
     try {
       const params = new URLSearchParams({
@@ -51,6 +54,8 @@ export function InfiniteFeed({
       console.error("Error loading more posts:", error);
       setHasMore(false);
     } finally {
+      clearTimeout(skeletonTimer);
+      setShowSkeletons(false);
       setLoading(false);
     }
   }, [page, loading, hasMore, category, search]);
@@ -85,13 +90,13 @@ export function InfiniteFeed({
       </div>
 
       {hasMore && (
-        <div ref={ref} className="flex justify-center py-12">
-          {loading && (
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              className="w-8 h-8 border-2 border-neutral-300 dark:border-neutral-700 border-t-red-500 rounded-full"
-            />
+        <div ref={ref} className="py-12">
+          {loading && showSkeletons && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <PostCardSkeleton key={i} />
+              ))}
+            </div>
           )}
         </div>
       )}

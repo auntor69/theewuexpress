@@ -7,6 +7,7 @@ import { Post } from "@/db/schema";
 import toast from "react-hot-toast";
 import { Upload, X, Image as ImageIcon, Link2 } from "lucide-react";
 import { RichTextEditor } from "./RichTextEditor";
+import { compressImages } from "@/lib/imageCompression";
 
 interface PostFormProps {
   post?: Post;
@@ -50,8 +51,16 @@ export function PostForm({ post, mode }: PostFormProps) {
 
   const handleUploadFiles = useCallback(
     async (files: FileList): Promise<string[]> => {
+      // Compress in the browser first: a 5 MB phone photo becomes ~300 KB,
+      // so imgbb serves a small original and pages render noticeably faster.
+      const toUpload = await compressImages(Array.from(files), (done, total, summary) => {
+        if (total > 1) {
+          toast.loading(`Optimizing ${done}/${total} — ${summary}`, { id: "img-compress", duration: 1500 });
+        }
+      });
+
       const formData = new FormData();
-      Array.from(files).forEach((file) => formData.append("files", file));
+      toUpload.forEach((file) => formData.append("files", file));
 
       const res = await fetch("/api/upload", {
         method: "POST",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import DOMPurify from "isomorphic-dompurify";
 import Image from "next/image";
 import Link from "next/link";
@@ -28,6 +28,7 @@ interface ArticleContentProps {
 
 export function ArticleContent({ post }: ArticleContentProps) {
   const category = getCategoryBySlug(post.category);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const sanitizedContent = useMemo(
     () =>
@@ -49,6 +50,17 @@ export function ArticleContent({ post }: ArticleContentProps) {
   useEffect(() => {
     fetch(`/api/posts/${post.id}/views`, { method: "POST" }).catch(() => {});
   }, [post.id]);
+
+  // Body images come from imgbb as raw <img> tags — add lazy-loading so
+  // below-fold photos never compete with the article for bandwidth.
+  useEffect(() => {
+    const root = contentRef.current;
+    if (!root) return;
+    root.querySelectorAll("img").forEach((img) => {
+      img.loading = "lazy";
+      img.decoding = "async";
+    });
+  }, [sanitizedContent]);
 
   const [shareUrl, setShareUrl] = useState(`/article/${post.slug}`);
 
@@ -178,6 +190,7 @@ export function ArticleContent({ post }: ArticleContentProps) {
         </motion.div>
 
         <motion.div
+          ref={contentRef}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}

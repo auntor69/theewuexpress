@@ -59,6 +59,12 @@
   }
 }
 
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 @layer components {
   /* Tiptap editor */
   .ProseMirror {

@@ -17,6 +17,10 @@ interface PostCardProps {
 export function PostCard({ post, index, variant = "default" }: PostCardProps) {
   const category = getCategoryBySlug(post.category);
 
+  // Stagger must stay tiny as the infinite feed grows — with raw `index` the
+  // 30th card would wait 1.5s to appear (feels broken on a slow connection).
+  const stagger = Math.min(index % 6, 5) * 0.05;
+
   const categoryChip = category ? (
     <span
       className="inline-block px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
@@ -35,7 +39,7 @@ export function PostCard({ post, index, variant = "default" }: PostCardProps) {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        transition={{ delay: index * 0.05 }}
+        transition={{ delay: stagger }}
       >
         <Link
           href={`/article/${post.slug}`}
@@ -72,7 +76,7 @@ export function PostCard({ post, index, variant = "default" }: PostCardProps) {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        transition={{ delay: index * 0.05 }}
+        transition={{ delay: stagger }}
       >
         <Link
           href={`/article/${post.slug}`}
@@ -117,7 +121,7 @@ export function PostCard({ post, index, variant = "default" }: PostCardProps) {
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ delay: index * 0.05 }}
+      transition={{ delay: stagger }}
     >
       <Link href={`/article/${post.slug}`} className="group block">
         <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-3">

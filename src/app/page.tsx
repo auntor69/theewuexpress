@@ -3,6 +3,7 @@ import { posts } from "@/db/schema";
 import { desc, eq, sql } from "drizzle-orm";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { BackToTop } from "@/components/layout/BackToTop";
 import { HeroSection } from "@/components/home/HeroSection";
 import { CategoryBar } from "@/components/home/CategoryBar";
 import { SectionHeader } from "@/components/home/SectionHeader";
@@ -108,6 +109,7 @@ export default async function HomePage() {
       </section>
 
       <Footer />
+      <BackToTop />
     </main>
   );
 }

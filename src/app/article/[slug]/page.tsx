@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ArticleContent } from "@/components/article/ArticleContent";
+import { ReadingProgress } from "@/components/article/ReadingProgress";
 import { RelatedPosts } from "@/components/article/RelatedPosts";
 import type { Metadata } from "next";
 
@@ -69,6 +70,7 @@ export default async function ArticlePage({ params }: PageProps) {
 
   return (
     <main className="min-h-screen">
+      <ReadingProgress />
       <Navbar />
       <ArticleContent post={post} />
       <RelatedPosts posts={relatedPosts} />
