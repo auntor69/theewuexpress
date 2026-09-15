@@ -23,6 +23,7 @@ import {
   Link2,
   Link2Off,
   ImagePlus,
+  Image as ImageIcon,
   AlignLeft,
   AlignCenter,
   AlignRight,
@@ -144,9 +145,14 @@ export function RichTextEditor({
       }
       return;
     }
+    insertImageByUrl();
+  };
+
+  // Direct image-link insertion (e.g. an imgbb URL) — always available.
+  const insertImageByUrl = () => {
     const url = window.prompt("Paste an image URL (https://…)");
-    if (url) {
-      editor.chain().focus().setImage({ src: url }).run();
+    if (url && /^https?:\/\//i.test(url.trim())) {
+      editor.chain().focus().setImage({ src: url.trim() }).run();
     }
   };
 
@@ -262,6 +268,9 @@ export function RichTextEditor({
         </ToolbarButton>
         <ToolbarButton title="Insert image" onClick={insertImage}>
           <ImagePlus size={16} />
+        </ToolbarButton>
+        <ToolbarButton title="Insert image from URL" onClick={insertImageByUrl}>
+          <ImageIcon size={16} />
         </ToolbarButton>
         <ToolbarButton
           title="Divider line"

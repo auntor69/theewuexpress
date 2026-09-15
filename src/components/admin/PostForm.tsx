@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { categories } from "@/lib/categories";
 import { Post } from "@/db/schema";
 import toast from "react-hot-toast";
-import { Upload, X, Image as ImageIcon } from "lucide-react";
+import { Upload, X, Image as ImageIcon, Link2 } from "lucide-react";
 import { RichTextEditor } from "./RichTextEditor";
 
 interface PostFormProps {
@@ -43,6 +43,7 @@ export function PostForm({ post, mode }: PostFormProps) {
     tags: parseJsonArray(post?.tags),
   });
   const [tagInput, setTagInput] = useState("");
+  const [linkInput, setLinkInput] = useState("");
   const [uploadedImages, setUploadedImages] = useState<string[]>(
     parseJsonArray(post?.images)
   );
@@ -113,6 +114,19 @@ export function PostForm({ post, mode }: PostFormProps) {
       input.click();
     });
   }, [handleUploadFiles]);
+
+  const addImageUrl = (raw: string) => {
+    const url = raw.trim();
+    if (!url) return;
+    if (!/^https?:\/\//i.test(url)) {
+      toast.error("Image URL must start with http:// or https://");
+      return;
+    }
+    setUploadedImages((prev) => (prev.includes(url) ? prev : [...prev, url]));
+    setForm((prev) => ({ ...prev, coverImage: prev.coverImage || url }));
+    setLinkInput("");
+    toast.success("Image link added!");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -357,11 +371,40 @@ export function PostForm({ post, mode }: PostFormProps) {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="w-full flex items-center justify-center gap-2 px-4 py-8 border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-xl hover:border-red-500 transition-colors text-neutral-500 hover:text-red-500"
+              className="w-full flex items-center justify-center gap-2 px-4 py-6 border-2 border-dashed border-neutral-300 dark:border-neutral-600 rounded-xl hover:border-red-500 transition-colors text-neutral-500 hover:text-red-500"
             >
               <Upload size={20} />
               <span className="text-sm font-medium">Upload Images</span>
             </button>
+            {/* Paste an image link (e.g. from imgbb) — same behavior as the old system. */}
+            <div className="flex gap-2 mt-3">
+              <div className="relative flex-1">
+                <Link2
+                  size={15}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"
+                />
+                <input
+                  type="url"
+                  value={linkInput}
+                  onChange={(e) => setLinkInput(e.target.value)}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && (e.preventDefault(), addImageUrl(linkInput))
+                  }
+                  placeholder="Paste an image link (imgbb, https://…)"
+                  className="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-red-500 dark:text-white"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => addImageUrl(linkInput)}
+                className="px-4 py-2.5 bg-neutral-900 dark:bg-neutral-700 text-white rounded-xl text-sm font-medium hover:bg-neutral-800 dark:hover:bg-neutral-600 transition-colors flex-shrink-0"
+              >
+                Add
+              </button>
+            </div>
+            <p className="text-xs text-neutral-400 mt-1.5">
+              Upload a file or paste a link — both are stored in the database and work in production.
+            </p>
             {uploadedImages.length > 0 && (
               <div className="grid grid-cols-2 gap-2 mt-4">
                 {uploadedImages.map((url, i) => (
