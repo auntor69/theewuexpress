@@ -2,15 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { categories } from "@/lib/categories";
-import { Check, Loader2, ArrowRight } from "lucide-react";
-
-const NAVY = "#0f2a5c";
+import { Check, Loader2 } from "lucide-react";
 
 /**
- * Compact professional footer: one slim navy band with the newsletter form,
- * a tight link grid, and a single bottom line — the opposite of a tall
- * boxy dark slab. Everything centered, generous only where it matters.
+ * Slim footer — one band, three things, done. No headline block, no stacked
+ * columns, no filler paragraph: brand + sections + subscribe on a single row
+ * on desktop, tightly stacked on mobile, closed by a one-line colophon.
  */
 export function Footer() {
   const [email, setEmail] = useState("");
@@ -49,140 +48,90 @@ export function Footer() {
   };
 
   return (
-    <footer className="mt-20">
-      {/* Newsletter band — navy, slim, one row */}
-      <div style={{ backgroundColor: NAVY }}>
-        <div className="container-editorial py-10">
-          <div className="flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-12">
-            <div className="lg:w-1/2">
-              <p className="kicker">The EWU Express Weekly</p>
-              <h2 className="font-display text-2xl sm:text-[1.7rem] font-semibold text-[#f5efe0] mt-1.5 leading-snug">
-                The stories that matter, in your inbox every week.
-              </h2>
-            </div>
-            <div className="lg:w-1/2">
-              <form onSubmit={handleSubscribe} className="flex gap-2">
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    if (status !== "idle") setStatus("idle");
-                  }}
-                  placeholder="you@ewubd.edu"
-                  disabled={status === "loading"}
-                  aria-label="Email address"
-                  className="flex-1 min-w-0 px-4 py-3 bg-white/[0.07] border border-white/15 rounded-md text-sm text-white placeholder:text-white/40 outline-none focus:border-[#c9a227] focus:bg-white/10 transition-colors disabled:opacity-60"
-                />
-                <button
-                  type="submit"
-                  disabled={status === "loading"}
-                  className="px-5 py-3 bg-[#c9a227] rounded-md text-sm font-bold text-[#0f2a5c] hover:bg-[#d9b23a] transition-colors duration-300 disabled:opacity-60 flex items-center gap-1.5 flex-shrink-0"
-                >
-                  {status === "loading" ? (
-                    <Loader2 size={14} className="animate-spin" />
-                  ) : status === "success" ? (
-                    <Check size={14} />
-                  ) : null}
-                  {status === "loading"
-                    ? "Subscribing…"
-                    : status === "success"
-                    ? "Done"
-                    : "Subscribe"}
-                </button>
-              </form>
-              {message && (
-                <p
-                  className={`text-xs mt-2 ${
-                    status === "error" ? "text-red-300" : "text-[#c9a227]"
-                  }`}
-                >
-                  {message}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+    <footer className="mt-16 hairline-t bg-surface">
+      <div className="container-editorial">
+        <div className="py-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between md:gap-8">
+          {/* Brand — one line */}
+          <Link href="/" className="flex items-center gap-2.5 shrink-0">
+            <Image
+              src="/logo.png"
+              alt="The EWU Express"
+              width={26}
+              height={26}
+              className="rounded-md"
+            />
+            <span className="font-display font-bold text-sm tracking-tight text-ink">
+              THE EWU EXPRESS
+            </span>
+          </Link>
 
-      {/* Link grid — quiet, on paper */}
-      <div className="bg-surface hairline-t hairline-b">
-        <div className="container-editorial py-10">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="col-span-2 md:col-span-1">
-              <p className="font-display font-bold text-ink tracking-tight">
-                THE EWU EXPRESS
-              </p>
-              <p className="text-muted text-sm leading-relaxed mt-2">
-                The student news publication of East West University — campus
-                heat, real stories, student voice.
-              </p>
-            </div>
-
-            <div>
-              <p className="kicker mb-3">Sections</p>
-              <div className="flex flex-col gap-2">
-                {categories.map((cat) => (
-                  <Link
-                    key={cat.slug}
-                    href={`/category/${cat.slug}`}
-                    className="text-muted hover:text-[var(--accent)] transition-colors duration-300 text-sm"
-                  >
-                    {cat.name}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <p className="kicker mb-3">Read</p>
-              <div className="flex flex-col gap-2">
-                <Link
-                  href="/"
-                  className="text-muted hover:text-[var(--accent)] transition-colors duration-300 text-sm"
-                >
-                  Front page
-                </Link>
-                <Link
-                  href="/search"
-                  className="text-muted hover:text-[var(--accent)] transition-colors duration-300 text-sm"
-                >
-                  Search stories
-                </Link>
-              </div>
-            </div>
-
-            <div>
-              <p className="kicker mb-3">About</p>
-              <p className="text-muted text-sm leading-relaxed">
-                Written by students, for students. Raw stories, real talk,
-                campus culture.
-              </p>
+          {/* Sections — inline, wraps instead of stacking */}
+          <nav
+            className="flex flex-wrap items-center gap-x-4 gap-y-1.5 md:justify-center"
+            aria-label="Sections"
+          >
+            {categories.map((cat) => (
               <Link
-                href="/admin/login"
-                className="text-faint hover:text-[var(--accent)] transition-colors text-xs mt-3 inline-block"
+                key={cat.slug}
+                href={`/category/${cat.slug}`}
+                className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted hover:text-[var(--accent)] transition-colors duration-300"
               >
-                Staff login
+                {cat.name}
               </Link>
-            </div>
-          </div>
-        </div>
-      </div>
+            ))}
+          </nav>
 
-      {/* Bottom bar — one slim line */}
-      <div className="bg-surface">
-        <div className="container-editorial py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p className="text-faint text-xs">
+          {/* Subscribe — compact inline form */}
+          <form onSubmit={handleSubscribe} className="flex gap-2 md:shrink-0">
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (status !== "idle") setStatus("idle");
+              }}
+              placeholder="you@ewubd.edu"
+              disabled={status === "loading"}
+              aria-label="Email address"
+              className="h-9 w-full md:w-44 px-3 bg-raised border border-line rounded-md text-[13px] text-ink placeholder:text-faint outline-none focus:border-[var(--gold)] transition-colors disabled:opacity-60"
+            />
+            <button
+              type="submit"
+              disabled={status === "loading"}
+              className="h-9 px-3.5 rounded-md text-[13px] font-bold bg-[#c9a227] text-[#0f2a5c] hover:bg-[#d9b23a] transition-colors duration-300 disabled:opacity-60 flex items-center gap-1.5 shrink-0"
+            >
+              {status === "loading" ? (
+                <Loader2 size={13} className="animate-spin" />
+              ) : status === "success" ? (
+                <Check size={13} />
+              ) : null}
+              {status === "success" ? "Done" : "Subscribe"}
+            </button>
+          </form>
+        </div>
+
+        {message && (
+          <p
+            className={`pb-4 -mt-2 text-[11px] ${
+              status === "error" ? "text-red-500" : "text-[var(--gold)]"
+            }`}
+          >
+            {message}
+          </p>
+        )}
+
+        {/* Colophon — one line */}
+        <div className="py-3.5 hairline-t flex items-center justify-between gap-3">
+          <p className="text-faint text-[11px]">
             &copy; {new Date().getFullYear()} The EWU Express &middot; East West
             University, Dhaka
           </p>
           <Link
-            href="/"
-            className="text-faint hover:text-[var(--accent)] text-xs transition-colors inline-flex items-center gap-1"
+            href="/admin/login"
+            className="text-faint hover:text-[var(--accent)] text-[11px] transition-colors shrink-0"
           >
-            Back to front page
-            <ArrowRight size={11} className="-rotate-45" />
+            Staff login
           </Link>
         </div>
       </div>
