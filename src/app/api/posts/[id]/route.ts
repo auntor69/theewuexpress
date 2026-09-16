@@ -117,8 +117,14 @@ export async function PUT(
 
     // Draft → published transition → notify subscribers (best-effort).
     // Only when the post was NOT published before, so routine edits don't re-notify.
-    if (updatedPost[0].published && existing && !existing.published) {
-      void notifySubscribersOfPost(updatedPost[0]);
+    // An explicit body.notify flag (from the admin "Send to subscribers" action)
+    // forces a send even for an already-live post.
+    const shouldNotify =
+      body.notify === true ||
+      (updatedPost[0].published && existing && !existing.published);
+
+    if (updatedPost[0].published && shouldNotify) {
+      await notifySubscribersOfPost(updatedPost[0]);
     }
 
     return NextResponse.json(updatedPost[0]);

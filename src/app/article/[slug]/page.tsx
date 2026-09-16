@@ -7,6 +7,7 @@ import { Footer } from "@/components/layout/Footer";
 import { ArticleContent } from "@/components/article/ArticleContent";
 import { ReadingProgress } from "@/components/article/ReadingProgress";
 import { RelatedPosts } from "@/components/article/RelatedPosts";
+import { sanitizeStoryHtml } from "@/lib/sanitizeContent";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -68,11 +69,15 @@ export default async function ArticlePage({ params }: PageProps) {
         .orderBy(desc(posts.views))
         .limit(3);
 
+  // Sanitized once, on the server, so the rendered HTML is clean for readers
+  // and crawlers and the browser never has to load a sanitizer library.
+  const safeContent = sanitizeStoryHtml(post.content);
+
   return (
     <main className="min-h-screen">
       <ReadingProgress />
       <Navbar />
-      <ArticleContent post={post} />
+      <ArticleContent post={post} safeContent={safeContent} />
       <RelatedPosts posts={relatedPosts} />
       <Footer />
     </main>

@@ -10,6 +10,10 @@ import { cn } from "@/lib/utils";
 import { categories } from "@/lib/categories";
 import { ThemeToggle } from "./ThemeToggle";
 
+/**
+ * Masthead — the paper's identity bar. Brand + small-caps section links on
+ * a hairline; condenses on scroll so reading never feels crowded.
+ */
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -36,6 +40,13 @@ export function Navbar() {
     setIsSearchOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    document.body.style.overflow = isMobileMenuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMobileMenuOpen]);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -45,77 +56,61 @@ export function Navbar() {
 
   return (
     <>
-      <nav
+      <header
         className={cn(
-          "fixed top-0 left-0 right-0 z-50 bg-white/85 dark:bg-neutral-950/85 backdrop-blur-xl transition-all duration-300",
-          isScrolled
-            ? "h-14 shadow-sm border-b border-neutral-200 dark:border-neutral-800"
-            : "h-16 border-b border-transparent"
+          "fixed top-0 left-0 right-0 z-50 bg-[var(--paper)]/90 backdrop-blur-md transition-all duration-500 ease-butter",
+          isScrolled ? "shadow-paper" : "hairline-b"
         )}
       >
-        <div className="h-full max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="h-full flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <Image
-                src="/logo.png"
-                alt="EWU Express"
-                width={36}
-                height={36}
-                className="rounded-lg group-hover:scale-105 transition-transform"
-                priority
-              />
-              <span className="font-display font-semibold text-base sm:text-lg tracking-tight dark:text-white leading-none">
-                THE EWU EXPRESS
-              </span>
-            </Link>
+        <div
+          className={cn(
+            "container-editorial flex items-center justify-between transition-all duration-500 ease-butter",
+            isScrolled ? "h-14" : "h-16 sm:h-[72px]"
+          )}
+        >
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <Image
+              src="/logo.png"
+              alt="The EWU Express"
+              width={34}
+              height={34}
+              className="rounded-md transition-transform duration-500 ease-butter group-hover:scale-105"
+              priority
+            />
+            <span className="font-display font-bold text-base sm:text-lg tracking-tight text-ink leading-none whitespace-nowrap">
+              THE EWU EXPRESS
+            </span>
+          </Link>
 
-            <div className="hidden md:flex items-center gap-0.5">
-              {categories.map((cat) => {
-                const active = pathname === `/category/${cat.slug}`;
-                return (
-                  <Link
-                    key={cat.slug}
-                    href={`/category/${cat.slug}`}
-                    className={cn(
-                      "relative px-3 py-1.5 text-sm font-medium transition-colors",
-                      active
-                        ? "text-neutral-900 dark:text-white"
-                        : "text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
-                    )}
-                  >
-                    {cat.name}
-                    <span
-                      className={cn(
-                        "absolute inset-x-3 -bottom-[1px] h-0.5 rounded-full bg-gradient-to-r from-red-500 to-orange-500 transition-transform duration-200 origin-left",
-                        active ? "scale-x-100" : "scale-x-0"
-                      )}
-                    />
-                  </Link>
-                );
-              })}
-            </div>
+          <nav className="hidden md:flex items-center gap-7" aria-label="Sections">
+            {categories.map((cat) => (
+              <Link
+                key={cat.slug}
+                href={`/category/${cat.slug}`}
+                className="masthead-link"
+                data-active={pathname === `/category/${cat.slug}`}
+              >
+                {cat.name}
+              </Link>
+            ))}
+          </nav>
 
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setIsSearchOpen(!isSearchOpen)}
-                className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                aria-label="Search"
-              >
-                <Search size={18} className="dark:text-white" />
-              </button>
-              <ThemeToggle />
-              <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-                aria-label="Menu"
-              >
-                {isMobileMenuOpen ? (
-                  <X size={18} className="dark:text-white" />
-                ) : (
-                  <Menu size={18} className="dark:text-white" />
-                )}
-              </button>
-            </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              className="p-2 rounded-full hover:bg-[var(--raised)] transition-colors text-muted hover:text-ink"
+              aria-label="Search"
+            >
+              <Search size={17} />
+            </button>
+            <ThemeToggle />
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden p-2 rounded-full hover:bg-[var(--raised)] transition-colors text-muted hover:text-ink"
+              aria-label="Menu"
+            >
+              {isMobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
           </div>
         </div>
 
@@ -125,54 +120,57 @@ export function Navbar() {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 overflow-hidden"
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="hairline-t overflow-hidden"
             >
-              <form onSubmit={handleSearch} className="max-w-2xl mx-auto p-4">
+              <form onSubmit={handleSearch} className="container-editorial py-4">
                 <input
                   type="text"
-                  placeholder="Search stories..."
+                  placeholder="Search stories…"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   autoFocus
-                  className="w-full px-4 py-3 bg-neutral-100 dark:bg-neutral-900 rounded-xl text-lg outline-none focus:ring-2 focus:ring-red-500 dark:text-white"
+                  className="w-full px-4 py-3 bg-[var(--raised)] rounded-md text-lg font-display outline-none focus:ring-2 focus:ring-[var(--gold)] text-ink"
                 />
               </form>
             </motion.div>
           )}
         </AnimatePresence>
-      </nav>
+      </header>
 
+      {/* Mobile drawer — full-screen, serif links, staggered in */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-40 bg-white dark:bg-neutral-950 pt-20"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 z-40 bg-[var(--paper)] pt-20 md:hidden"
           >
-            <div className="flex flex-col items-center gap-1 p-8">
+            <div className="container-editorial flex flex-col">
               {categories.map((cat, i) => (
                 <motion.div
                   key={cat.slug}
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.04 * i }}
-                  className="w-full text-center"
+                  transition={{ delay: 0.05 + 0.05 * i, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                  className="hairline-b"
                 >
                   <Link
                     href={`/category/${cat.slug}`}
                     className={cn(
-                      "block py-3 text-2xl font-display transition-colors",
+                      "flex items-baseline justify-between py-4 font-display text-2xl transition-colors duration-300",
                       pathname === `/category/${cat.slug}`
-                        ? "text-red-500"
-                        : "text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white"
+                        ? "text-[var(--accent)]"
+                        : "text-ink"
                     )}
                   >
                     {cat.name}
+                    <span className="text-faint text-xs uppercase tracking-widest">
+                      0{i + 1}
+                    </span>
                   </Link>
-                  {i < categories.length - 1 && (
-                    <div className="h-px w-16 mx-auto bg-neutral-200 dark:bg-neutral-800" />
-                    )}
                 </motion.div>
               ))}
             </div>

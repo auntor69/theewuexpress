@@ -139,9 +139,11 @@ export async function POST(request: NextRequest) {
       })
       .returning();
 
-    // New post published → notify subscribers (best-effort, never blocks the response).
+    // New post published → notify subscribers. Awaited (with an internal time
+    // budget) so serverless keeps the function alive long enough to send;
+    // notifySubscribersOfPost never throws, so publishing can't fail on mail.
     if (newPost[0]?.published) {
-      void notifySubscribersOfPost(newPost[0]);
+      await notifySubscribersOfPost(newPost[0]);
     }
 
     return NextResponse.json(newPost[0], { status: 201 });

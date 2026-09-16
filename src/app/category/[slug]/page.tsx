@@ -47,23 +47,31 @@ export default async function CategoryPage({ params }: PageProps) {
     .orderBy(desc(posts.createdAt))
     .limit(6);
 
+  const color = getCategoryBySlug(params.slug)?.color;
+
   return (
     <main className="min-h-screen">
       <Navbar />
-      <div className="pt-24 pb-8 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-8">
-            <div
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl font-bold text-lg mb-4 bg-[#08216e] text-white dark:bg-[#f5f5f5] dark:text-[#07226b]"
-            >
-              {category.name}
-            </div>
-            <p className="text-neutral-500 dark:text-neutral-400 text-lg">
-              {category.description}
-            </p>
-          </div>
-          <InfiniteFeed key={params.slug} initialPosts={categoryPosts} category={params.slug} />
+      <div className="h-16 sm:h-[72px]" aria-hidden />
+
+      {/* Section opener — kicker, serif title, hairline */}
+      <div className="hairline-b bg-[var(--surface)]">
+        <div className="container-editorial pt-12 pb-10">
+          <p className="kicker">Section</p>
+          <h1
+            className="font-display text-4xl sm:text-5xl font-semibold tracking-tight text-ink mt-2"
+            style={color && !isUncategorized ? { color } : undefined}
+          >
+            {category.name}
+          </h1>
+          <p className="text-muted text-lg mt-3 font-display italic">
+            {category.description}
+          </p>
         </div>
+      </div>
+
+      <div className="container-editorial py-10">
+        <InfiniteFeed key={params.slug} initialPosts={categoryPosts} category={params.slug} />
       </div>
       <Footer />
     </main>

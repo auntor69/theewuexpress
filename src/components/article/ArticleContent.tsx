@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import DOMPurify from "isomorphic-dompurify";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { m as motion } from "framer-motion";
@@ -24,28 +23,13 @@ import toast from "react-hot-toast";
 
 interface ArticleContentProps {
   post: Post;
+  /** Story HTML already sanitized on the server (see lib/sanitizeContent). */
+  safeContent: string;
 }
 
-export function ArticleContent({ post }: ArticleContentProps) {
+export function ArticleContent({ post, safeContent }: ArticleContentProps) {
   const category = getCategoryBySlug(post.category);
   const contentRef = useRef<HTMLDivElement>(null);
-
-  const sanitizedContent = useMemo(
-    () =>
-      DOMPurify.sanitize(post.content, {
-        ALLOWED_TAGS: [
-          "p", "h1", "h2", "h3", "h4", "h5", "h6",
-          "blockquote", "ul", "ol", "li", "a", "strong", "em",
-          "u", "s", "mark", "code", "pre", "sub", "sup",
-          "img", "br", "hr", "span", "div", "figure", "figcaption",
-        ],
-        ALLOWED_ATTR: [
-          "href", "src", "alt", "title", "class", "target", "rel",
-          "style", "start", "loading",
-        ],
-      }),
-    [post.content]
-  );
 
   useEffect(() => {
     fetch(`/api/posts/${post.id}/views`, { method: "POST" }).catch(() => {});
@@ -60,7 +44,7 @@ export function ArticleContent({ post }: ArticleContentProps) {
       img.loading = "lazy";
       img.decoding = "async";
     });
-  }, [sanitizedContent]);
+  }, [safeContent]);
 
   const [shareUrl, setShareUrl] = useState(`/article/${post.slug}`);
 
@@ -94,13 +78,14 @@ export function ArticleContent({ post }: ArticleContentProps) {
   };
 
   return (
-    <article className="pt-20">
-      <div className="relative w-full aspect-[21/9] sm:aspect-[3/1] overflow-hidden">
+    <article className="pt-16 sm:pt-[72px]">
+      {/* Framed hero image — newspaper photograph above the fold */}
+      <div className="container-editorial pt-6 sm:pt-8">
         <motion.div
-          initial={{ scale: 1.06, opacity: 0.6 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
-          className="absolute inset-0"
+          initial={{ opacity: 0, scale: 1.02 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+          className="relative w-full aspect-[16/9] sm:aspect-[21/9] overflow-hidden bg-raised"
         >
           <Image
             src={post.coverImage}
@@ -110,89 +95,89 @@ export function ArticleContent({ post }: ArticleContentProps) {
             priority
           />
         </motion.div>
-        <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-neutral-950 via-transparent to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-transparent" />
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 -mt-20 relative z-10">
+      <div className="max-w-[720px] mx-auto px-4 sm:px-6">
         <motion.div
-          initial={{ opacity: 0, y: 24, filter: "blur(6px)" }}
+          initial={{ opacity: 0, y: 20, filter: "blur(4px)" }}
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
         >
           <Link
             href="/"
-            className="inline-flex items-center gap-1 text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 mb-6 transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-muted hover:text-[var(--accent)] mt-8 transition-colors duration-300"
           >
-            <ArrowLeft size={14} />
-            Back to feed
+            <ArrowLeft size={13} />
+            Front page
           </Link>
 
           {category && (
-            <span
-              className="inline-block px-3 py-1 rounded-full text-xs font-bold text-white mb-4"
-              style={{ backgroundColor: category.color }}
-            >
-              {category.name}
-            </span>
+            <div className="mt-6">
+              <span className="kicker" style={{ color: category.color }}>
+                {category.name}
+              </span>
+            </div>
           )}
 
-          <h1 className="font-display text-3xl sm:text-5xl font-semibold leading-[1.1] tracking-tight dark:text-white mb-4">
+          <h1 className="font-display text-[2rem] sm:text-[2.75rem] font-semibold leading-[1.12] tracking-tight text-ink mt-3">
             {post.title}
           </h1>
 
-          <p className="text-lg text-neutral-500 dark:text-neutral-400 mb-6 font-display italic">
+          <p className="text-muted text-lg leading-relaxed mt-4 font-display italic">
             {post.caption}
           </p>
 
-          <div className="flex items-center justify-between border-y border-neutral-200 dark:border-neutral-800 py-4 mb-10">
-            <div className="flex items-center gap-4 text-sm text-neutral-500">
-              <span className="uppercase tracking-wider text-xs font-medium">
-                By The EWU Express Desk
+          {/* Byline + tools on a hairline rule */}
+          <div className="flex items-center justify-between gap-4 hairline-t hairline-b py-3.5 mt-8">
+            <div className="flex items-center gap-4 text-xs text-muted uppercase tracking-wider min-w-0">
+              <span className="font-semibold text-ink whitespace-nowrap">
+                The EWU Express Desk
               </span>
-              <span className="flex items-center gap-1">
-                <Clock size={14} />
-                {estimateReadTime(post.content)} min read
+              <span className="hidden sm:inline text-faint whitespace-nowrap">
+                {formatDate(post.createdAt)}
               </span>
-              <span className="flex items-center gap-1">
-                <Eye size={14} />
-                {formatViews(post.views)} views
+              <span className="flex items-center gap-1 whitespace-nowrap">
+                <Clock size={12} />
+                {estimateReadTime(post.content)} min
               </span>
-              <span className="hidden sm:block">{formatDate(post.createdAt)}</span>
+              <span className="flex items-center gap-1 whitespace-nowrap">
+                <Eye size={12} />
+                {formatViews(post.views)}
+              </span>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 flex-shrink-0">
               <button
                 onClick={handleShare}
-                className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                className="p-2 rounded-full hover:bg-[var(--raised)] transition-colors text-muted hover:text-ink"
                 aria-label="Share"
               >
-                <Share2 size={16} className="dark:text-neutral-400" />
+                <Share2 size={15} />
               </button>
               <a
                 href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(shareUrl)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                className="p-2 rounded-full hover:bg-[var(--raised)] transition-colors text-muted hover:text-ink"
                 aria-label="Share on Twitter"
               >
-                <ExternalLink size={16} className="dark:text-neutral-400" />
+                <ExternalLink size={15} />
               </a>
               <a
                 href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                className="p-2 rounded-full hover:bg-[var(--raised)] transition-colors text-muted hover:text-ink"
                 aria-label="Share on Facebook"
               >
-                <ExternalLink size={16} className="dark:text-neutral-400" />
+                <ExternalLink size={15} />
               </a>
               <button
                 onClick={handleCopyLink}
-                className="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+                className="p-2 rounded-full hover:bg-[var(--raised)] transition-colors text-muted hover:text-ink"
                 aria-label="Copy link"
               >
-                <Link2 size={16} className="dark:text-neutral-400" />
+                <Link2 size={15} />
               </button>
             </div>
           </div>
@@ -202,31 +187,40 @@ export function ArticleContent({ post }: ArticleContentProps) {
           ref={contentRef}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="article-content prose prose-lg dark:prose-invert max-w-none
-            prose-headings:font-black prose-headings:tracking-tight
-            prose-p:text-neutral-700 dark:prose-p:text-neutral-300 prose-p:leading-relaxed
-            prose-blockquote:border-l-4 prose-blockquote:border-red-500
-            prose-blockquote:bg-neutral-50 dark:prose-blockquote:bg-neutral-900
-            prose-blockquote:rounded-r-xl prose-blockquote:py-4 prose-blockquote:px-6
-            prose-blockquote:not-italic prose-blockquote:font-medium
-            prose-blockquote:text-neutral-800 dark:prose-blockquote:text-neutral-200
-            prose-a:text-red-500 prose-a:no-underline hover:prose-a:underline
-            prose-img:rounded-xl
-            prose-strong:text-neutral-900 dark:prose-strong:text-white
-            prose-li:text-neutral-700 dark:prose-li:text-neutral-300"
-          dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+          transition={{ delay: 0.25, duration: 0.6 }}
+          className="article-content prose prose-lg max-w-none my-10
+            prose-headings:font-display prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-ink
+            prose-p:text-[#3f3a34] dark:prose-p:text-[#c9c2b6] prose-p:leading-[1.85]
+            prose-blockquote:border-l-2 prose-blockquote:border-[var(--gold)]
+            prose-blockquote:bg-[var(--raised)] prose-blockquote:rounded-r-md
+            prose-blockquote:py-4 prose-blockquote:px-6 prose-blockquote:not-italic
+            prose-blockquote:font-display prose-blockquote:text-xl prose-blockquote:leading-relaxed
+            prose-blockquote:text-ink
+            prose-a:text-[var(--accent)] prose-a:no-underline hover:prose-a:underline
+            prose-img:rounded-md prose-img:shadow-paper
+            prose-strong:text-ink
+            prose-li:text-[#3f3a34] dark:prose-li:text-[#c9c2b6]
+            prose-hr:border-[var(--line)]"
+          dangerouslySetInnerHTML={{ __html: safeContent }}
         />
 
-        <div className="border-t border-neutral-200 dark:border-neutral-800 mt-16 pt-8">
-          <div className="flex items-center gap-4">
-            <Image src="/logo.png" alt="EWU Express" width={48} height={48} className="rounded-full" />
-            <div>
-              <p className="font-bold dark:text-white">The EWU Express</p>
-              <p className="text-sm text-neutral-500">
-                The voice of East West University
-              </p>
-            </div>
+        {/* Byline card */}
+        <div className="bg-surface border border-line rounded-md p-6 flex items-center gap-4 mb-4">
+          <Image
+            src="/logo.png"
+            alt="The EWU Express"
+            width={44}
+            height={44}
+            className="rounded-md"
+          />
+          <div>
+            <p className="kicker">Published by</p>
+            <p className="font-display font-bold text-ink leading-tight mt-0.5">
+              The EWU Express
+            </p>
+            <p className="text-muted text-sm">
+              The student news publication of East West University
+            </p>
           </div>
         </div>
       </div>

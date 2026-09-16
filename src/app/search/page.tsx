@@ -5,7 +5,6 @@ import { escapeLikePattern } from "@/lib/utils";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { InfiniteFeed } from "@/components/home/InfiniteFeed";
-import { Search } from "lucide-react";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -44,32 +43,32 @@ export default async function SearchPage({ searchParams }: PageProps) {
   return (
     <main className="min-h-screen">
       <Navbar />
-      <div className="pt-24 pb-8 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-2">
-              <Search size={24} className="text-neutral-400" />
-              <h1 className="text-3xl font-black dark:text-white">
-                {query ? `Results for "${query}"` : "Search"}
-              </h1>
-            </div>
-            {query && (
-              <p className="text-neutral-500">
-                {totalCount} {totalCount === 1 ? "story" : "stories"} found
-              </p>
-            )}
-          </div>
+      <div className="h-16 sm:h-[72px]" aria-hidden />
 
-          {query ? (
-            <InfiniteFeed key={query} initialPosts={searchResults} search={query} />
-          ) : (
-            <div className="text-center py-20">
-              <p className="text-neutral-400 text-lg">
-                Use the search bar above to find stories.
-              </p>
-            </div>
+      <div className="hairline-b bg-[var(--surface)]">
+        <div className="container-editorial pt-12 pb-10">
+          <p className="kicker">Search</p>
+          <h1 className="font-display text-4xl sm:text-5xl font-semibold tracking-tight text-ink mt-2">
+            {query ? `"${query}"` : "Find a story"}
+          </h1>
+          {query && (
+            <p className="text-muted text-lg mt-3 font-display italic">
+              {totalCount} {totalCount === 1 ? "story" : "stories"} found
+            </p>
           )}
         </div>
+      </div>
+
+      <div className="container-editorial py-10">
+        {query ? (
+          <InfiniteFeed key={query} initialPosts={searchResults} search={query} />
+        ) : (
+          <div className="text-center py-20">
+            <p className="text-muted text-lg">
+              Use the search bar above to find stories.
+            </p>
+          </div>
+        )}
       </div>
       <Footer />
     </main>

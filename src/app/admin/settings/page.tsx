@@ -254,7 +254,7 @@ export default function SettingsPage() {
               <span className="inline-flex items-center gap-1.5">
                 <Globe size={13} /> Site URL
               </span>{" "}
-              <span className="text-neutral-400 font-normal">(for links inside emails)</span>
+              <span className="text-neutral-400 font-normal">(where newsletter links point)</span>
             </label>
             <input
               type="url"
@@ -262,10 +262,15 @@ export default function SettingsPage() {
               onChange={(e) =>
                 setForm((prev) => ({ ...prev, siteUrl: e.target.value }))
               }
-              placeholder="https://theewuexpress.com"
+              placeholder="https://theewuexpress.vercel.app"
               className="w-full px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-red-500 dark:text-white"
             />
           </div>
+
+          <p className="text-xs text-neutral-400 -mt-2">
+            The Site URL must be your live site (e.g. https://theewuexpress.vercel.app) —
+            every newsletter email links the exact article there.
+          </p>
 
           <button
             type="submit"

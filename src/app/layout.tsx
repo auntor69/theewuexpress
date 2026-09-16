@@ -14,20 +14,23 @@ const newsreader = Newsreader({
 });
 
 export const metadata: Metadata = {
-  title: "The EWU Express | Campus Stories, Unfiltered",
+  title: {
+    default: "The EWU Express | The Student News Publication of East West University",
+    template: "%s | The EWU Express",
+  },
   description:
-    "The voice of East West University. Raw stories, real talk, campus culture — unfiltered.",
+    "The student news publication of East West University. Campus heat, real stories, student voice — reported with care.",
   openGraph: {
     title: "The EWU Express",
     description:
-      "The voice of East West University. Raw stories, real talk, campus culture — unfiltered.",
+      "The student news publication of East West University. Campus heat, real stories, student voice.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "The EWU Express",
     description:
-      "The voice of East West University. Raw stories, real talk, campus culture — unfiltered.",
+      "The student news publication of East West University. Campus heat, real stories, student voice.",
   },
 };
 

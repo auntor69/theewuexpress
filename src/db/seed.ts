@@ -182,22 +182,54 @@ async function seed() {
   const isRemote = /^(libsql|https?):/i.test(targetUrl);
   console.log(`Seeding database: ${isRemote ? "Turso cloud" : targetUrl}`);
 
-  const hashedPassword = await bcrypt.hash("admin123", 10);
-  await db
-    .insert(adminUsers)
-    .values({
-      email: "admin@ewuexpress.com",
-      password: hashedPassword,
-      name: "Admin",
-    })
-    .onConflictDoNothing();
+  // ---------- Admin account ----------
+  // Credentials come from the environment. The weak dev default is only ever
+  // used against a LOCAL database — a remote (production) database is never
+  // given a guessable password.
+  const adminEmail = (process.env.ADMIN_EMAIL || "admin@ewuexpress.com")
+    .trim()
+    .toLowerCase();
+  const adminPassword = process.env.ADMIN_PASSWORD?.trim();
+  const adminName = process.env.ADMIN_NAME?.trim() || "Admin";
+
+  if (adminPassword) {
+    if (adminPassword.length < 8) {
+      throw new Error("ADMIN_PASSWORD must be at least 8 characters.");
+    }
+    await db
+      .insert(adminUsers)
+      .values({
+        email: adminEmail,
+        password: await bcrypt.hash(adminPassword, 10),
+        name: adminName,
+      })
+      .onConflictDoUpdate({
+        target: adminUsers.email,
+        set: { password: await bcrypt.hash(adminPassword, 10), name: adminName },
+      });
+    console.log(`Admin account ready: ${adminEmail}`);
+  } else if (isRemote) {
+    console.warn(
+      "SKIPPED admin account: refusing to set a default password on a remote database.\n" +
+        "Re-run with ADMIN_PASSWORD='<strong-password>' to create or reset the admin login."
+    );
+  } else {
+    await db
+      .insert(adminUsers)
+      .values({
+        email: adminEmail,
+        password: await bcrypt.hash("admin123", 10),
+        name: adminName,
+      })
+      .onConflictDoNothing();
+    console.log(`Local dev admin: ${adminEmail} / admin123 — change this before deploying.`);
+  }
 
   for (const post of samplePosts) {
     await db.insert(posts).values(post).onConflictDoNothing();
   }
 
   console.log("Seeding complete!");
-  console.log("Admin credentials: admin@ewuexpress.com / admin123");
 }
 
 seed()

@@ -26,7 +26,6 @@
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
     "framer-motion": "^12.38.0",
-    "isomorphic-dompurify": "^3.3.0",
     "lucide-react": "^1.11.0",
     "next": "14.2.35",
     "next-auth": "^5.0.0-beta.31",
@@ -36,6 +35,7 @@
     "react-dom": "^18",
     "react-hot-toast": "^2.6.0",
     "react-intersection-observer": "^10.0.3",
+    "sanitize-html": "^2.17.7",
     "zustand": "^5.0.12"
   },
   "devDependencies": {
@@ -44,6 +44,7 @@
     "@types/nodemailer": "^8.0.1",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/sanitize-html": "^2.16.1",
     "drizzle-kit": "^0.31.10",
     "eslint": "^8",
     "eslint-config-next": "14.2.35",

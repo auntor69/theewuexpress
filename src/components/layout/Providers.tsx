@@ -8,7 +8,8 @@ import { LazyMotion, MotionConfig, domAnimation } from "framer-motion";
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
-      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+      {/* Light (print) is the identity; dark stays one toggle away. */}
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
         {/* LazyMotion loads only the small animation feature set (~5kb vs ~30kb+),
             and reducedMotion="user" honors the OS "reduce motion" setting. */}
         <MotionConfig reducedMotion="user">
@@ -18,9 +19,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
               position="bottom-right"
               toastOptions={{
                 style: {
-                  background: "#18181b",
-                  color: "#fff",
-                  borderRadius: "12px",
+                  background: "#0f2a5c",
+                  color: "#f5efe0",
+                  borderRadius: "8px",
+                  fontSize: "14px",
                 },
               }}
             />

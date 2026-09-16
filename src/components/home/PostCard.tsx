@@ -1,12 +1,12 @@
 "use client";
 
-import { m as motion } from "framer-motion";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 import { Post } from "@/db/schema";
 import { getCategoryBySlug } from "@/lib/categories";
-import { timeAgo, estimateReadTime, formatViews } from "@/lib/utils";
-import { Eye, Clock, ArrowRight } from "lucide-react";
+import { timeAgo, estimateReadTime, formatViews, cn } from "@/lib/utils";
+import { Clock, ArrowRight } from "lucide-react";
+import { m as motion } from "framer-motion";
 
 interface PostCardProps {
   post: Post;
@@ -14,6 +14,11 @@ interface PostCardProps {
   variant?: "default" | "compact" | "wide";
 }
 
+/**
+ * Editorial card — typography-first, quiet borders, warm paper elevation.
+ * Hover: image zooms subtly inside its frame, headline warms to accent,
+ * a hairline gold underline draws itself under the headline.
+ */
 export function PostCard({ post, index, variant = "default" }: PostCardProps) {
   const category = getCategoryBySlug(post.category);
 
@@ -21,13 +26,10 @@ export function PostCard({ post, index, variant = "default" }: PostCardProps) {
   // 30th card would wait 1.5s to appear (feels broken on a slow connection).
   const stagger = Math.min(index % 6, 5) * 0.05;
 
-  const categoryChip = category ? (
+  const categoryLabel = category ? (
     <span
-      className="inline-block px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
-      style={{
-        color: category.color,
-        backgroundColor: category.softBg,
-      }}
+      className="kicker"
+      style={category ? { color: category.color } : undefined}
     >
       {category.name}
     </span>
@@ -36,33 +38,33 @@ export function PostCard({ post, index, variant = "default" }: PostCardProps) {
   if (variant === "compact") {
     return (
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ delay: stagger }}
+        viewport={{ once: true, margin: "-40px" }}
+        transition={{ delay: stagger, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
       >
         <Link
           href={`/article/${post.slug}`}
-          className="group flex gap-4 items-start"
+          className="group flex gap-4 items-start py-4 hairline-b"
         >
-          <div className="relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
+          <div className="relative w-20 h-20 overflow-hidden flex-shrink-0 bg-raised">
             <Image
               src={post.coverImage}
               alt={post.title}
               fill
               sizes="80px"
-              className="object-cover group-hover:scale-110 transition-transform duration-500 ease-butter will-change-transform"
+              className="object-cover transition-transform duration-700 ease-butter will-change-transform group-hover:scale-[1.08]"
             />
           </div>
           <div className="flex-1 min-w-0">
-            {categoryChip}
-            <h3 className="font-display font-semibold text-sm leading-snug line-clamp-2 transition-colors duration-300 ease-butter group-hover:text-red-500 dark:text-white">
+            {categoryLabel}
+            <h3 className="font-display font-semibold text-[15px] leading-snug mt-1 text-ink transition-colors duration-300 ease-butter group-hover:text-[var(--accent)] line-clamp-2">
               {post.title}
             </h3>
-            <div className="flex items-center gap-2 text-neutral-500 text-xs mt-1">
-              <span>{formatViews(post.views)} views</span>
-              <span>&middot;</span>
+            <div className="flex items-center gap-2 text-muted text-xs mt-1.5">
               <span>{timeAgo(post.createdAt)}</span>
+              <span aria-hidden>&middot;</span>
+              <span>{formatViews(post.views)} reads</span>
             </div>
           </div>
         </Link>
@@ -73,42 +75,39 @@ export function PostCard({ post, index, variant = "default" }: PostCardProps) {
   if (variant === "wide") {
     return (
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ delay: stagger }}
+        viewport={{ once: true, margin: "-40px" }}
+        transition={{ delay: stagger, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
       >
         <Link
           href={`/article/${post.slug}`}
-          className="group flex flex-col sm:flex-row gap-4"
+          className="group flex flex-col sm:flex-row gap-6 py-6 hairline-b"
         >
-          <div className="relative w-full sm:w-64 aspect-video sm:aspect-[4/3] rounded-xl overflow-hidden flex-shrink-0">
+          <div className="relative w-full sm:w-64 aspect-video sm:aspect-[4/3] overflow-hidden flex-shrink-0 bg-raised">
             <Image
               src={post.coverImage}
               alt={post.title}
               fill
               sizes="(min-width: 640px) 256px, 100vw"
-              className="object-cover group-hover:scale-[1.06] transition-transform duration-700 ease-butter will-change-transform"
+              className="object-cover transition-transform duration-700 ease-butter will-change-transform group-hover:scale-[1.05]"
             />
           </div>
-          <div className="flex-1">
-            {categoryChip}
-            <h3 className="font-display text-xl font-semibold leading-snug transition-colors duration-300 ease-butter group-hover:text-red-500 dark:text-white">
+          <div className="flex-1 flex flex-col justify-center">
+            {categoryLabel}
+            <h3 className="font-display text-2xl font-semibold leading-snug mt-1.5 text-ink transition-colors duration-300 ease-butter group-hover:text-[var(--accent)]">
               {post.title}
             </h3>
-            <p className="text-neutral-500 dark:text-neutral-400 text-sm mt-2 line-clamp-2">
+            <p className="text-muted text-[15px] leading-relaxed mt-2 line-clamp-2">
               {post.caption}
             </p>
-            <div className="flex items-center gap-3 text-neutral-400 text-xs mt-3">
+            <div className="flex items-center gap-3 text-faint text-xs mt-4 uppercase tracking-wider">
+              <span>{formatDate(post.createdAt)}</span>
+              <span aria-hidden>&middot;</span>
               <span className="flex items-center gap-1">
                 <Clock size={12} />
-                {estimateReadTime(post.content)} min
+                {estimateReadTime(post.content)} min read
               </span>
-              <span className="flex items-center gap-1">
-                <Eye size={12} />
-                {formatViews(post.views)}
-              </span>
-              <span>{timeAgo(post.createdAt)}</span>
             </div>
           </div>
         </Link>
@@ -117,60 +116,74 @@ export function PostCard({ post, index, variant = "default" }: PostCardProps) {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
+    <motion.article
+      initial={{ opacity: 0, y: 18 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: stagger }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ delay: stagger, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
     >
       <Link
         href={`/article/${post.slug}`}
-        className="group block rounded-2xl transition-transform duration-500 ease-butter will-change-transform hover:-translate-y-1.5"
+        className="group block bg-surface border border-line rounded-md overflow-hidden shadow-paper transition-all duration-500 ease-butter will-change-transform hover:shadow-paper-lg hover:-translate-y-1"
       >
-        <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-3.5 shadow-sm group-hover:shadow-2xl group-hover:shadow-neutral-900/10 dark:group-hover:shadow-black/40 transition-shadow duration-500 ease-butter">
+        <div className="relative aspect-[3/2] overflow-hidden bg-raised">
           <Image
             src={post.coverImage}
             alt={post.title}
             fill
             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-            className="object-cover group-hover:scale-[1.06] transition-transform duration-700 ease-butter will-change-transform"
+            className="object-cover transition-transform duration-700 ease-butter will-change-transform group-hover:scale-[1.06]"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-butter" />
           {post.featured && (
-            <div className="absolute top-3 right-3">
-              <span className="px-2 py-1 bg-white/95 dark:bg-neutral-900/90 text-neutral-900 dark:text-white text-[10px] font-bold rounded-full uppercase tracking-wider backdrop-blur">
-                Featured
-              </span>
-            </div>
+            <span className="absolute top-3 left-3 bg-[#0f2a5c] text-[#f5efe0] text-[10px] font-bold uppercase tracking-[0.18em] px-2.5 py-1">
+              Featured
+            </span>
           )}
         </div>
-        <div className="px-0.5">
-          {categoryChip}
-          <h3 className="font-display text-lg font-semibold leading-snug mt-1.5 transition-colors duration-300 ease-butter group-hover:text-red-500 dark:text-white line-clamp-2">
-            {post.title}
-          </h3>
-          <p className="text-neutral-500 dark:text-neutral-400 text-sm mt-1.5 line-clamp-2">
+
+        <div className="p-5">
+          {categoryLabel}
+          <div className="relative inline-block">
+            <h3 className="font-display text-xl font-semibold leading-snug mt-1.5 text-ink transition-colors duration-300 ease-butter group-hover:text-[var(--accent)] line-clamp-2">
+              {post.title}
+            </h3>
+            <span
+              className="absolute left-0 -bottom-0.5 h-[2px] w-full origin-left scale-x-0 bg-[var(--gold)] transition-transform duration-500 ease-butter group-hover:scale-x-100"
+              aria-hidden
+            />
+          </div>
+          <p className="text-muted text-sm leading-relaxed mt-2 line-clamp-2">
             {post.caption}
           </p>
-          <div className="flex items-center justify-between mt-3">
-            <div className="flex items-center gap-3 text-neutral-400 text-xs">
-              <span className="flex items-center gap-1">
-                <Clock size={12} />
-                {estimateReadTime(post.content)} min
-              </span>
-              <span className="flex items-center gap-1">
-                <Eye size={12} />
-                {formatViews(post.views)}
-              </span>
+          <div className="flex items-center justify-between mt-4 pt-3 hairline-t">
+            <div className="flex items-center gap-2.5 text-faint text-[11px] uppercase tracking-wider">
               <span>{timeAgo(post.createdAt)}</span>
+              <span aria-hidden>&middot;</span>
+              <span>{estimateReadTime(post.content)} min</span>
+              <span aria-hidden>&middot;</span>
+              <span>{formatViews(post.views)}</span>
             </div>
-            <span className="flex items-center gap-1 text-xs font-semibold text-red-500 sm:opacity-0 sm:translate-x-[-6px] sm:group-hover:opacity-100 sm:group-hover:translate-x-0 transition-all duration-400 ease-butter">
+            <span
+              className={cn(
+                "flex items-center gap-1 text-xs font-semibold text-[var(--accent)]",
+                "sm:opacity-0 sm:-translate-x-1 sm:group-hover:opacity-100 sm:group-hover:translate-x-0",
+                "transition-all duration-400 ease-butter"
+              )}
+            >
               Read
               <ArrowRight size={13} />
             </span>
           </div>
         </div>
       </Link>
-    </motion.div>
+    </motion.article>
   );
+}
+
+function formatDate(dateString: string): string {
+  return new Date(
+    dateString.endsWith("Z") || dateString.includes("+")
+      ? dateString
+      : dateString.replace(" ", "T") + "Z"
+  ).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }

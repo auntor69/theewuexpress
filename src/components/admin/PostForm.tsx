@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { categories } from "@/lib/categories";
 import { Post } from "@/db/schema";
 import toast from "react-hot-toast";
-import { Upload, X, Image as ImageIcon, Link2 } from "lucide-react";
+import { Upload, X, Image as ImageIcon, Link2, Send } from "lucide-react";
 import { RichTextEditor } from "./RichTextEditor";
 import { compressImages } from "@/lib/imageCompression";
 
@@ -43,6 +43,9 @@ export function PostForm({ post, mode }: PostFormProps) {
     published: post?.published !== false,
     tags: parseJsonArray(post?.tags),
   });
+  // Only meaningful in edit mode for an already-live post: re-send the
+  // newsletter to subscribers (create always announces on publish).
+  const [notify, setNotify] = useState(false);
   const [tagInput, setTagInput] = useState("");
   const [linkInput, setLinkInput] = useState("");
   const [uploadedImages, setUploadedImages] = useState<string[]>(
@@ -158,6 +161,7 @@ export function PostForm({ post, mode }: PostFormProps) {
           ...form,
           category: form.category || null,
           images: uploadedImages,
+          notify: mode === "edit" && notify ? true : undefined,
         }),
       });
 
@@ -168,9 +172,11 @@ export function PostForm({ post, mode }: PostFormProps) {
 
       toast.success(
         mode === "create"
-          ? form.category
-            ? "Post published!"
-            : "Saved! Assign a category from the dashboard when ready."
+          ? form.published
+            ? "Published — subscribers are being notified."
+            : "Draft saved."
+          : notify
+          ? "Updated — newsletter is going out to subscribers."
           : "Post updated!"
       );
       router.push("/admin/posts");
@@ -322,6 +328,26 @@ export function PostForm({ post, mode }: PostFormProps) {
                 />
                 <span className="text-sm dark:text-neutral-300">Published</span>
               </label>
+
+              {mode === "edit" && post?.published && (
+                <label className="flex items-start gap-3 cursor-pointer rounded-xl bg-neutral-100 dark:bg-neutral-800 p-3">
+                  <input
+                    type="checkbox"
+                    checked={notify}
+                    onChange={(e) => setNotify(e.target.checked)}
+                    className="mt-0.5 w-4 h-4 rounded accent-red-500"
+                  />
+                  <span className="text-sm dark:text-neutral-300">
+                    <span className="inline-flex items-center gap-1.5 font-medium">
+                      <Send size={13} />
+                      Email this to subscribers
+                    </span>
+                    <span className="block text-xs text-neutral-500 mt-1">
+                      Re-sends the newsletter with this story&apos;s link when you save.
+                    </span>
+                  </span>
+                </label>
+              )}
             </div>
 
             <div>

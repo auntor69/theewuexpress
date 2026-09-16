@@ -38,12 +38,12 @@ export function ReadingProgress() {
 
   return (
     <div
-      className="fixed top-0 left-0 right-0 z-[60] h-0.5 pointer-events-none"
+      className="fixed top-0 left-0 right-0 z-[60] h-[3px] pointer-events-none"
       aria-hidden
     >
       <div
         ref={barRef}
-        className="h-full origin-left bg-gradient-to-r from-red-500 to-orange-500"
+        className="h-full origin-left bg-[var(--gold)]"
         style={{ transform: "scaleX(0)" }}
       />
     </div>
