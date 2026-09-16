@@ -203,10 +203,13 @@
     transform: scaleX(1);
   }
 
-  /* Quiet category strip item (no pills, no icons — just type). */
+  /* Quiet category strip item (no pills, no icons — just type).
+     flex-shrink:0 is deliberate — see CategoryBar: shrinking collapses the
+     labels into unusable narrow columns. */
   .category-item {
-    @apply relative flex flex-col justify-center px-6 py-4 transition-colors duration-300;
+    @apply relative flex flex-col justify-center shrink-0 px-4 sm:px-6 py-3 sm:py-4 transition-colors duration-300;
     color: var(--muted);
+    flex-shrink: 0;
   }
   .category-item:hover {
     color: var(--ink);

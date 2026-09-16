@@ -20,8 +20,8 @@ export function HeroSection({ posts }: { posts: Post[] }) {
   const mainReadTime = estimateReadTime(mainPost.content);
 
   return (
-    <section className="container-editorial pt-6 sm:pt-8 pb-10">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
+    <section className="container-editorial pt-5 sm:pt-8 pb-8 sm:pb-10">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-10">
         {/* Lead story — spans the page like a broadsheet's main block */}
         <div className="lg:col-span-8">
           <Link href={`/article/${mainPost.slug}`} className="group block">
@@ -86,14 +86,16 @@ export function HeroSection({ posts }: { posts: Post[] }) {
         {sidePosts.length > 0 && (
           <div className="lg:col-span-4 flex flex-col">
             <h2 className="kicker pb-3 hairline-b">More featured</h2>
-            <div className="flex-1 flex flex-col divide-y divide-[var(--line)]">
+            {/* flex-1 only from lg up: it exists to fill the tall desktop rail.
+                On mobile the rows size to their content. */}
+            <div className="lg:flex-1 flex flex-col divide-y divide-[var(--line)]">
               {sidePosts.map((post) => {
                 const category = getCategoryBySlug(post.category);
                 return (
                   <Link
                     key={post.id}
                     href={`/article/${post.slug}`}
-                    className="group flex gap-4 py-5 first:pt-5 flex-1 items-start"
+                    className="group flex gap-4 py-4 sm:py-5 lg:flex-1 items-start"
                   >
                     <div className="flex-1 min-w-0">
                       {category && (
