@@ -43,6 +43,13 @@ export default function SettingsPage() {
     mailAppPassword: "",
     siteUrl: "",
   });
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    current: "",
+    next: "",
+    confirm: "",
+  });
 
   useEffect(() => {
     fetch("/api/admin/settings")
@@ -105,6 +112,45 @@ export default function SettingsPage() {
       toast.error(err instanceof Error ? err.message : "Test failed");
     } finally {
       setTesting(false);
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (changingPassword) return;
+
+    if (passwordForm.next !== passwordForm.confirm) {
+      toast.error("The new password and confirmation don't match");
+      return;
+    }
+    if (passwordForm.next.length < 8) {
+      toast.error("The new password must be at least 8 characters");
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      const res = await fetch("/api/admin/password", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          currentPassword: passwordForm.current,
+          newPassword: passwordForm.next,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "Could not change the password");
+      }
+
+      toast.success("Password updated — use it next time you sign in.");
+      setPasswordForm({ current: "", next: "", confirm: "" });
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Could not change the password"
+      );
+    } finally {
+      setChangingPassword(false);
     }
   };
 
@@ -310,6 +356,93 @@ export default function SettingsPage() {
             {testing ? "Sending..." : "Send test"}
           </button>
         </div>
+      </div>
+
+      {/* Admin account card */}
+      <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6 mt-6">
+        <div className="flex items-center gap-2 mb-1">
+          <KeyRound size={16} className="text-amber-500" />
+          <h2 className="font-bold text-lg dark:text-white">Admin account</h2>
+        </div>
+        <p className="text-sm text-neutral-500 mb-4">
+          The password you use to sign in to this panel. Minimum 8 characters.
+        </p>
+
+        <form onSubmit={handleChangePassword} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+              Current password
+            </label>
+            <input
+              type="password"
+              required
+              value={passwordForm.current}
+              onChange={(e) =>
+                setPasswordForm((prev) => ({ ...prev, current: e.target.value }))
+              }
+              autoComplete="current-password"
+              className="w-full px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-red-500 dark:text-white"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                New password
+              </label>
+              <div className="relative">
+                <input
+                  type={showNewPassword ? "text" : "password"}
+                  required
+                  minLength={8}
+                  value={passwordForm.next}
+                  onChange={(e) =>
+                    setPasswordForm((prev) => ({ ...prev, next: e.target.value }))
+                  }
+                  autoComplete="new-password"
+                  className="w-full px-4 pr-10 py-2.5 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-red-500 dark:text-white"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+                  aria-label={showNewPassword ? "Hide password" : "Show password"}
+                >
+                  {showNewPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                Confirm new password
+              </label>
+              <input
+                type={showNewPassword ? "text" : "password"}
+                required
+                minLength={8}
+                value={passwordForm.confirm}
+                onChange={(e) =>
+                  setPasswordForm((prev) => ({ ...prev, confirm: e.target.value }))
+                }
+                autoComplete="new-password"
+                className="w-full px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-red-500 dark:text-white"
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={changingPassword}
+            className="flex items-center gap-2 px-5 py-2.5 bg-neutral-900 dark:bg-neutral-700 text-white font-medium rounded-xl hover:bg-neutral-800 dark:hover:bg-neutral-600 transition-colors disabled:opacity-50 text-sm"
+          >
+            {changingPassword ? (
+              <Loader2 size={15} className="animate-spin" />
+            ) : (
+              <KeyRound size={15} />
+            )}
+            {changingPassword ? "Updating..." : "Update password"}
+          </button>
+        </form>
       </div>
 
       <a

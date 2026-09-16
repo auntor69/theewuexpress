@@ -121,18 +121,13 @@ export function Footer() {
           </p>
         )}
 
-        {/* Colophon — one line */}
-        <div className="py-3.5 hairline-t flex items-center justify-between gap-3">
+        {/* Colophon — one line. The admin panel is intentionally unlinked:
+            staff know the URL, readers don't need a door into it. */}
+        <div className="py-3.5 hairline-t">
           <p className="text-faint text-[11px]">
             &copy; {new Date().getFullYear()} The EWU Express &middot; East West
             University, Dhaka
           </p>
-          <Link
-            href="/admin/login"
-            className="text-faint hover:text-[var(--accent)] text-[11px] transition-colors shrink-0"
-          >
-            Staff login
-          </Link>
         </div>
       </div>
     </footer>

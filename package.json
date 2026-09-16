@@ -9,6 +9,7 @@
     "lint": "next lint",
     "db:migrate": "npx tsx src/db/migrate.ts",
     "db:seed": "npx tsx src/db/seed.ts",
+    "db:password": "npx tsx src/db/set-password.ts",
     "db:setup": "npm run db:migrate && npm run db:seed"
   },
   "dependencies": {
