@@ -14,6 +14,9 @@ import { articleUrl, resolveSiteUrl } from "@/lib/siteUrl";
  */
 
 const SITE_NAME = "The EWU Express";
+// The site origin used for links inside emails is resolved by lib/siteUrl.ts
+// (saved settings → NEXT_PUBLIC_SITE_URL → Vercel URL → the live domain
+// https://theewuexpress.vercel.app as the final fallback).
 const BRAND_NAVY = "#0f2a5c";
 const BRAND_GOLD = "#c9a227";
 const ACCENT = "#b91c1c";
