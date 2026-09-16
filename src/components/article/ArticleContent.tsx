@@ -113,9 +113,7 @@ export function ArticleContent({ post, safeContent }: ArticleContentProps) {
 
           {category && (
             <div className="mt-6">
-              <span className="kicker" style={{ color: category.color }}>
-                {category.name}
-              </span>
+              <span className="kicker">{category.name}</span>
             </div>
           )}
 
@@ -204,25 +202,6 @@ export function ArticleContent({ post, safeContent }: ArticleContentProps) {
           dangerouslySetInnerHTML={{ __html: safeContent }}
         />
 
-        {/* Byline card */}
-        <div className="bg-surface border border-line rounded-md p-6 flex items-center gap-4 mb-4">
-          <Image
-            src="/logo.png"
-            alt="The EWU Express"
-            width={44}
-            height={44}
-            className="rounded-md"
-          />
-          <div>
-            <p className="kicker">Published by</p>
-            <p className="font-display font-bold text-ink leading-tight mt-0.5">
-              The EWU Express
-            </p>
-            <p className="text-muted text-sm">
-              The student news publication of East West University
-            </p>
-          </div>
-        </div>
       </div>
     </article>
   );

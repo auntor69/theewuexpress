@@ -10,12 +10,15 @@ interface InfiniteFeedProps {
   initialPosts: Post[];
   category?: string;
   search?: string;
+  /** Ids already on the page — the feed must not repeat them. */
+  excludeIds?: number[];
 }
 
 export function InfiniteFeed({
   initialPosts,
   category,
   search,
+  excludeIds,
 }: InfiniteFeedProps) {
   const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [page, setPage] = useState(2);
@@ -38,6 +41,7 @@ export function InfiniteFeed({
       });
       if (category) params.set("category", category);
       if (search) params.set("search", search);
+      if (excludeIds?.length) params.set("exclude", excludeIds.join(","));
 
       const res = await fetch(`/api/posts?${params}`);
       const data = await res.json();
@@ -57,7 +61,7 @@ export function InfiniteFeed({
       setShowSkeletons(false);
       setLoading(false);
     }
-  }, [page, loading, hasMore, category, search]);
+  }, [page, loading, hasMore, category, search, excludeIds]);
 
   const loadMoreRef = useRef(loadMore);
   loadMoreRef.current = loadMore;

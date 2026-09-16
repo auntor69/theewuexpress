@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { posts } from "@/db/schema";
-import { desc, sql } from "drizzle-orm";
+import { desc, notInArray, sql } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { slugify, escapeLikePattern } from "@/lib/utils";
 import { getCategoryBySlug } from "@/lib/categories";
@@ -16,6 +16,13 @@ export async function GET(request: NextRequest) {
   const editorPick = searchParams.get("editorPick");
   const trending = searchParams.get("trending");
   const search = searchParams.get("search");
+  // Ids already displayed on the page (hero, most read, picks) so the feed
+  // never repeats a story the reader has already scrolled past.
+  const excludeIds = (searchParams.get("exclude") ?? "")
+    .split(",")
+    .map((value) => parseInt(value, 10))
+    .filter((value) => Number.isInteger(value) && value > 0)
+    .slice(0, 100);
   const offset = (page - 1) * limit;
 
   try {
@@ -41,6 +48,10 @@ export async function GET(request: NextRequest) {
     if (search) {
       const escaped = '%' + escapeLikePattern(search) + '%';
       conditions.push(sql`(${posts.title} LIKE ${escaped} ESCAPE '\\' OR ${posts.caption} LIKE ${escaped} ESCAPE '\\' OR ${posts.content} LIKE ${escaped} ESCAPE '\\')`);
+    }
+
+    if (excludeIds.length) {
+      conditions.push(notInArray(posts.id, excludeIds));
     }
 
     const whereCondition = conditions.length === 1

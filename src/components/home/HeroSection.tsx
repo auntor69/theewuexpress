@@ -46,11 +46,7 @@ export function HeroSection({ posts }: { posts: Post[] }) {
 
             <div className="pt-5">
               <div className="flex items-baseline gap-3 flex-wrap">
-                {mainCategory && (
-                  <span className="kicker" style={{ color: mainCategory.color }}>
-                    {mainCategory.name}
-                  </span>
-                )}
+                {mainCategory && <span className="kicker">{mainCategory.name}</span>}
                 <span className="text-faint text-[11px] uppercase tracking-wider">
                   {timeAgo(mainPost.createdAt)}
                 </span>
@@ -99,12 +95,7 @@ export function HeroSection({ posts }: { posts: Post[] }) {
                   >
                     <div className="flex-1 min-w-0">
                       {category && (
-                        <span
-                          className="kicker"
-                          style={{ color: category.color }}
-                        >
-                          {category.name}
-                        </span>
+                        <span className="kicker">{category.name}</span>
                       )}
                       <h3 className="font-display text-lg font-semibold leading-snug mt-1 text-ink transition-colors duration-300 ease-butter group-hover:text-[var(--accent)] line-clamp-3">
                         {post.title}

@@ -26,13 +26,10 @@ export function PostCard({ post, index, variant = "default" }: PostCardProps) {
   // 30th card would wait 1.5s to appear (feels broken on a slow connection).
   const stagger = Math.min(index % 6, 5) * 0.05;
 
+  // One accent for every section label — per-category rainbow tints read as
+  // decoration rather than hierarchy.
   const categoryLabel = category ? (
-    <span
-      className="kicker"
-      style={category ? { color: category.color } : undefined}
-    >
-      {category.name}
-    </span>
+    <span className="kicker">{category.name}</span>
   ) : null;
 
   if (variant === "compact") {

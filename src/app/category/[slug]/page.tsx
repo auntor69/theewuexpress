@@ -47,8 +47,6 @@ export default async function CategoryPage({ params }: PageProps) {
     .orderBy(desc(posts.createdAt))
     .limit(6);
 
-  const color = getCategoryBySlug(params.slug)?.color;
-
   return (
     <main className="min-h-screen">
       <Navbar />
@@ -57,16 +55,10 @@ export default async function CategoryPage({ params }: PageProps) {
       {/* Section opener — kicker, serif title, hairline */}
       <div className="hairline-b bg-[var(--surface)]">
         <div className="container-editorial pt-12 pb-10">
-          <p className="kicker">Section</p>
-          <h1
-            className="font-display text-4xl sm:text-5xl font-semibold tracking-tight text-ink mt-2"
-            style={color && !isUncategorized ? { color } : undefined}
-          >
+          <h1 className="font-display text-4xl sm:text-5xl font-semibold tracking-tight text-ink">
             {category.name}
           </h1>
-          <p className="text-muted text-lg mt-3 font-display italic">
-            {category.description}
-          </p>
+          <p className="text-muted text-base mt-2">{category.description}</p>
         </div>
       </div>
 
