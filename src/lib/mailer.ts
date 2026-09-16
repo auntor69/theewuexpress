@@ -9,7 +9,7 @@ import { getMailConfig } from "@/lib/settings";
  */
 
 const SITE_NAME = "The EWU Express";
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://theewuexpress.com";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://theewuexpress.vercel.app";
 
 export async function isMailerConfigured(): Promise<boolean> {
   return Boolean(await getMailConfig());
