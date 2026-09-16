@@ -1,0 +1,248 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light — warm newsprint paper, soft graphite ink. Never pure white/black. */
+    --paper: #faf8f3;
+    --surface: #fffefb;
+    --raised: #f2eee6;
+    --ink: #1c1917;
+    --muted: #6f675e;
+    --faint: #a39a8e;
+    --line: #e6e0d4;
+    --line-strong: #d6cebd;
+    --accent: #b91c1c;
+    --gold: #b8860b;
+  }
+
+  .dark {
+    /* Dark — warm charcoal (never pure black), cream ink (never pure white). */
+    --paper: #131211;
+    --surface: #1b1917;
+    --raised: #242019;
+    --ink: #ece7dd;
+    --muted: #a39a8e;
+    --faint: #6f675e;
+    --line: #2c2822;
+    --line-strong: #3d3730;
+    --accent: #ef4444;
+    --gold: #d4a72c;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    text-rendering: optimizeLegibility;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--paper);
+    color: var(--ink);
+    font-feature-settings: "ss01", "cv11";
+  }
+
+  /* Quiet brand touch: gold selection highlight. */
+  ::selection {
+    background: rgba(212, 167, 44, 0.28);
+    color: inherit;
+  }
+
+  /* Slim, theme-aware scrollbar. */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(138, 128, 114, 0.35);
+    border-radius: 8px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(138, 128, 114, 0.6);
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* GPU-friendly transforms — promotes elements so scroll/animation stay smooth. */
+  .will-animate {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+}
+
+/* Keep horizontal carousels snappy — vertical smooth only. */
+.scrollbar-hide {
+  scroll-behavior: auto;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@layer components {
+  /* ---------- Editorial primitives ---------- */
+
+  .container-editorial {
+    @apply mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Small-caps kicker above headlines — the paper's section label. */
+  .kicker {
+    @apply text-[11px] font-semibold uppercase tracking-[0.22em];
+    color: var(--gold);
+  }
+
+  /* Themed text helpers (avoid raw neutral-* everywhere). */
+  .text-ink {
+    color: var(--ink);
+  }
+  .text-muted {
+    color: var(--muted);
+  }
+  .text-faint {
+    color: var(--faint);
+  }
+  .bg-paper {
+    background-color: var(--paper);
+  }
+  .bg-surface {
+    background-color: var(--surface);
+  }
+  .bg-raised {
+    background-color: var(--raised);
+  }
+  .border-line {
+    border-color: var(--line);
+  }
+  .border-line-strong {
+    border-color: var(--line-strong);
+  }
+
+  .hairline-b {
+    border-bottom: 1px solid var(--line);
+  }
+  .hairline-t {
+    border-top: 1px solid var(--line);
+  }
+
+  /* Headline hover: ink → accent, buttery. */
+  .headline-hover {
+    transition: color 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .headline-hover:hover {
+    color: var(--accent);
+  }
+
+  /* Nav links: small caps with an underline that grows from the left. */
+  .masthead-link {
+    @apply relative text-[12px] font-semibold uppercase tracking-[0.14em] transition-colors duration-300;
+    color: var(--muted);
+  }
+  .masthead-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -6px;
+    height: 2px;
+    width: 100%;
+    background: var(--gold);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .masthead-link:hover,
+  .masthead-link[data-active="true"] {
+    color: var(--ink);
+  }
+  .masthead-link:hover::after,
+  .masthead-link[data-active="true"]::after {
+    transform: scaleX(1);
+  }
+
+  /* Gold underline draw used behind section titles. */
+  .rule-gold {
+    height: 2px;
+    width: 44px;
+    background: var(--gold);
+  }
+
+  /* ---------- Tiptap editor ---------- */
+  .ProseMirror {
+    @apply outline-none;
+  }
+
+  .ProseMirror p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    @apply text-neutral-400 dark:text-neutral-500 float-left h-0 pointer-events-none;
+  }
+
+  .ProseMirror img {
+    @apply rounded-xl;
+  }
+
+  /* Editorial drop cap on the article's opening paragraph. */
+  .article-content > p:first-of-type::first-letter {
+    float: left;
+    font-family: var(--font-display), Georgia, serif;
+    font-size: 3.4em;
+    line-height: 0.85;
+    padding-right: 0.12em;
+    padding-top: 0.05em;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .article-content blockquote {
+    @apply relative;
+  }
+
+  .article-content blockquote::before {
+    content: "\201C";
+    @apply absolute -left-2 -top-4 text-6xl font-serif;
+    color: rgba(184, 134, 11, 0.25);
+  }
+}
