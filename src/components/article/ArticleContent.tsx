@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { m as motion } from "framer-motion";
@@ -11,23 +11,22 @@ import {
   estimateReadTime,
   formatViews,
 } from "@/lib/utils";
-import {
-  Eye,
-  Clock,
-  ArrowLeft,
-  Share2,
-  ExternalLink,
-  Link2,
-} from "lucide-react";
-import toast from "react-hot-toast";
+import { Eye, Clock, ArrowLeft } from "lucide-react";
+import { ShareRow } from "@/components/article/ShareRow";
 
 interface ArticleContentProps {
   post: Post;
   /** Story HTML already sanitized on the server (see lib/sanitizeContent). */
   safeContent: string;
+  /** Absolute story URL, resolved on the server so share links work before hydration. */
+  canonicalUrl: string;
 }
 
-export function ArticleContent({ post, safeContent }: ArticleContentProps) {
+export function ArticleContent({
+  post,
+  safeContent,
+  canonicalUrl,
+}: ArticleContentProps) {
   const category = getCategoryBySlug(post.category);
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -45,37 +44,6 @@ export function ArticleContent({ post, safeContent }: ArticleContentProps) {
       img.decoding = "async";
     });
   }, [safeContent]);
-
-  const [shareUrl, setShareUrl] = useState(`/article/${post.slug}`);
-
-  useEffect(() => {
-    setShareUrl(window.location.href);
-  }, []);
-
-  const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      toast.success("Link copied!");
-    } catch {
-      toast.error("Failed to copy link");
-    }
-  };
-
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: post.title,
-          text: post.caption,
-          url: shareUrl,
-        });
-      } catch {
-        // User cancelled
-      }
-    } else {
-      handleCopyLink();
-    }
-  };
 
   return (
     <article className="pt-16 sm:pt-[72px]">
@@ -125,8 +93,8 @@ export function ArticleContent({ post, safeContent }: ArticleContentProps) {
             {post.caption}
           </p>
 
-          {/* Byline + tools on a hairline rule */}
-          <div className="flex items-center justify-between gap-4 hairline-t hairline-b py-3.5 mt-8">
+          {/* Byline on a hairline rule */}
+          <div className="hairline-t hairline-b py-3.5 mt-8">
             <div className="flex items-center gap-4 text-xs text-muted uppercase tracking-wider min-w-0">
               <span className="font-semibold text-ink whitespace-nowrap">
                 The EWU Express Desk
@@ -143,42 +111,14 @@ export function ArticleContent({ post, safeContent }: ArticleContentProps) {
                 {formatViews(post.views)}
               </span>
             </div>
-
-            <div className="flex items-center gap-1 flex-shrink-0">
-              <button
-                onClick={handleShare}
-                className="p-2 rounded-full hover:bg-[var(--raised)] transition-colors text-muted hover:text-ink"
-                aria-label="Share"
-              >
-                <Share2 size={15} />
-              </button>
-              <a
-                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(shareUrl)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 rounded-full hover:bg-[var(--raised)] transition-colors text-muted hover:text-ink"
-                aria-label="Share on Twitter"
-              >
-                <ExternalLink size={15} />
-              </a>
-              <a
-                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 rounded-full hover:bg-[var(--raised)] transition-colors text-muted hover:text-ink"
-                aria-label="Share on Facebook"
-              >
-                <ExternalLink size={15} />
-              </a>
-              <button
-                onClick={handleCopyLink}
-                className="p-2 rounded-full hover:bg-[var(--raised)] transition-colors text-muted hover:text-ink"
-                aria-label="Copy link"
-              >
-                <Link2 size={15} />
-              </button>
-            </div>
           </div>
+
+          <ShareRow
+            title={post.title}
+            caption={post.caption}
+            url={canonicalUrl}
+            className="mt-4"
+          />
         </motion.div>
 
         <motion.div
@@ -202,6 +142,15 @@ export function ArticleContent({ post, safeContent }: ArticleContentProps) {
           dangerouslySetInnerHTML={{ __html: safeContent }}
         />
 
+        {/* Repeat the share actions where readers actually finish the story. */}
+        <div className="mt-4 mb-16 pt-8 hairline-t">
+          <ShareRow
+            title={post.title}
+            caption={post.caption}
+            url={canonicalUrl}
+            heading="Share this story"
+          />
+        </div>
       </div>
     </article>
   );

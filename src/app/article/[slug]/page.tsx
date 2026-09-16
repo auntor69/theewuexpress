@@ -2,6 +2,8 @@ import { db } from "@/db";
 import { posts } from "@/db/schema";
 import { sql, desc } from "drizzle-orm";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
+import { articleUrl } from "@/lib/siteUrl";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ArticleContent } from "@/components/article/ArticleContent";
@@ -52,6 +54,15 @@ export default async function ArticlePage({ params }: PageProps) {
 
   if (!post) notFound();
 
+  // Absolute URL for the share links. The request host is the most accurate
+  // origin (preview deployments included); settings/env resolve the fallback.
+  const requestHeaders = headers();
+  const host = requestHeaders.get("host");
+  const protocol = requestHeaders.get("x-forwarded-proto") ?? "https";
+  const canonicalUrl = host
+    ? `${protocol}://${host}/article/${post.slug}`
+    : articleUrl(post);
+
   // Related posts: same category when possible, otherwise top editor picks.
   const relatedPosts = post.category
     ? await db
@@ -77,7 +88,11 @@ export default async function ArticlePage({ params }: PageProps) {
     <main className="min-h-screen">
       <ReadingProgress />
       <Navbar />
-      <ArticleContent post={post} safeContent={safeContent} />
+      <ArticleContent
+        post={post}
+        safeContent={safeContent}
+        canonicalUrl={canonicalUrl}
+      />
       <RelatedPosts posts={relatedPosts} />
       <Footer />
     </main>
