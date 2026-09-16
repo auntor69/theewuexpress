@@ -262,7 +262,7 @@ export default function SettingsPage() {
               onChange={(e) =>
                 setForm((prev) => ({ ...prev, siteUrl: e.target.value }))
               }
-              placeholder="https://theewuexpress.com"
+              placeholder="https://theewuexpress.vercel.app"
               className="w-full px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-red-500 dark:text-white"
             />
           </div>
