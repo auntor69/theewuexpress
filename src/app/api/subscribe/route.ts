@@ -1,14 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db, ensureSubscribersTable } from "@/db";
-import { subscribers } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { sendConfirmationEmail } from "@/lib/mailer";
+import { startSubscription } from "@/lib/newsletter";
+
+/** Sending the confirmation email needs a cold SMTP handshake to complete. */
+export const maxDuration = 30;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
- * Lightweight per-IP throttle so a script can't fill the subscriber table
- * with thousands of fake addresses. In-memory (per serverless instance) —
- * enough to stop casual abuse without adding a database round-trip.
+ * Lightweight per-IP throttle so a script can't use this endpoint to fire
+ * confirmation emails at thousands of addresses. In-memory (per serverless
+ * instance) — enough to stop casual abuse without a database round-trip.
  */
 const RATE_WINDOW_MS = 60 * 1000;
 const MAX_PER_WINDOW = 5;
@@ -35,6 +37,14 @@ function isRateLimited(ip: string): boolean {
   return false;
 }
 
+/**
+ * Newsletter signup.
+ *
+ * This is double opt-in: the address is stored as *pending* and only starts
+ * receiving stories after the reader clicks the link in the confirmation email
+ * (see startSubscription). That link is our proof of consent, and it is what
+ * prevents a stranger — or a typo — from being subscribed by someone else.
+ */
 export async function POST(request: NextRequest) {
   try {
     const ip =
@@ -48,11 +58,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // First subscribe in a fresh environment auto-creates the table.
-    await ensureSubscribersTable();
-
     const body = await request.json().catch(() => null);
-    const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
+    const email =
+      typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
 
     if (!EMAIL_RE.test(email) || email.length > 254) {
       return NextResponse.json(
@@ -61,32 +69,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const existing = await db
-      .select({ id: subscribers.id })
-      .from(subscribers)
-      .where(eq(subscribers.email, email))
-      .get();
+    const start = await startSubscription(email);
 
-    if (existing) {
+    if (start.status === "active") {
       return NextResponse.json({
         message: "You're already on the list — see you in your inbox!",
         alreadySubscribed: true,
       });
     }
 
-    try {
-      await db.insert(subscribers).values({ email });
-    } catch {
-      // Rare race: subscribed between check and insert. Still a success.
-      return NextResponse.json({
-        message: "You're already on the list — see you in your inbox!",
-        alreadySubscribed: true,
-      });
+    if (start.status === "failed") {
+      return NextResponse.json(
+        { error: "Something went wrong. Please try again." },
+        { status: 500 }
+      );
+    }
+
+    // Pending: they only join the list once they confirm.
+    const sent = await sendConfirmationEmail(start.email, start.confirmUrl);
+    if (!sent.ok) {
+      console.error("Confirmation email failed:", sent.error);
+      return NextResponse.json(
+        {
+          error:
+            "We couldn't send your confirmation email just now. Please try again in a moment.",
+        },
+        { status: 502 }
+      );
     }
 
     return NextResponse.json({
-      message: "Subscribed! You'll get an email when we publish.",
-      email,
+      message: start.resent
+        ? "Confirmation sent again — please check your inbox (and spam folder)."
+        : "Almost there — check your inbox and click the confirmation link.",
+      needsConfirmation: true,
+      email: start.email,
     });
   } catch (error) {
     console.error("Subscribe error:", error);

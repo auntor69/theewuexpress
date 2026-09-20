@@ -5,7 +5,12 @@ import {
   getSettings,
   setSettings,
   getMailConfig,
+  getNewsletterIdentity,
 } from "@/lib/settings";
+import { sendTestEmail } from "@/lib/mailer";
+
+/** Sending a test plus a cold SMTP handshake needs more than the 10s default. */
+export const maxDuration = 60;
 
 async function requireSession() {
   const session = await auth();
@@ -22,6 +27,7 @@ export async function GET() {
   try {
     const settings = await getSettings();
     const mail = await getMailConfig();
+    const identity = await getNewsletterIdentity();
 
     // Never return the app password — only whether one is saved.
     return NextResponse.json({
@@ -29,6 +35,11 @@ export async function GET() {
       mailUser: settings[SETTING_KEYS.mailUser] || "",
       hasMailAppPassword: Boolean(settings[SETTING_KEYS.mailAppPassword]),
       siteUrl: settings[SETTING_KEYS.siteUrl] || "",
+      mailAddress: settings[SETTING_KEYS.mailAddress] || "",
+      contactEmail: settings[SETTING_KEYS.contactEmail] || "",
+      // What is actually printed today, defaults included — so the admin can
+      // see the address that goes out even before setting one.
+      resolvedMailAddress: identity.postalAddress,
       active: mail
         ? {
             fromName: mail.fromName,
@@ -62,6 +73,12 @@ export async function PUT(request: NextRequest) {
     const fromName = typeof body.mailFromName === "string" ? body.mailFromName.trim() : "";
     const user = typeof body.mailUser === "string" ? body.mailUser.trim().toLowerCase() : "";
     const siteUrl = typeof body.siteUrl === "string" ? body.siteUrl.trim() : "";
+    const mailAddress =
+      typeof body.mailAddress === "string" ? body.mailAddress.trim() : "";
+    const contactEmail =
+      typeof body.contactEmail === "string"
+        ? body.contactEmail.trim().toLowerCase()
+        : "";
 
     if (fromName) updates[SETTING_KEYS.mailFromName] = fromName;
     if (user) {
@@ -81,6 +98,28 @@ export async function PUT(request: NextRequest) {
         );
       }
       updates[SETTING_KEYS.siteUrl] = siteUrl.replace(/\/+$/, "");
+    }
+
+    // Postal address printed in every email. CAN-SPAM requires a real physical
+    // address here, so reject obvious placeholders rather than let one ship.
+    if (mailAddress) {
+      if (mailAddress.length < 12) {
+        return NextResponse.json(
+          { error: "The postal address looks too short to be real" },
+          { status: 400 }
+        );
+      }
+      updates[SETTING_KEYS.mailAddress] = mailAddress.slice(0, 300);
+    }
+
+    if (contactEmail) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail)) {
+        return NextResponse.json(
+          { error: "Privacy contact address doesn't look valid" },
+          { status: 400 }
+        );
+      }
+      updates[SETTING_KEYS.contactEmail] = contactEmail;
     }
 
     // App password: only overwrite when a new value is provided (never clear it by accident).
@@ -127,41 +166,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const nodemailer = (await import("nodemailer")).default;
-    const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 465,
-      secure: true,
-      auth: { user: mail.user, pass: mail.appPassword },
-    });
-
-    await transporter.sendMail({
-      from: `${mail.fromName} <${mail.user}>`,
-      to,
-      subject: "✅ The EWU Express — newsletter test",
-      html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px;">
-        <h2 style="color:#08216e;">It works! 🎉</h2>
-        <p style="color:#525252;line-height:1.6;">
-          This is a test email from <strong>The EWU Express</strong> admin settings.
-          From now on, every new published story will automatically reach your
-          subscribers with a preview and a link to the article.
-        </p>
-      </div>`,
-      text: "The EWU Express newsletter is configured correctly.",
-    });
+    const result = await sendTestEmail(to);
+    if (!result.ok) {
+      return NextResponse.json(
+        {
+          error: result.error.includes("Invalid login")
+            ? "Gmail rejected the login — check the address and App Password (16 characters, no spaces)."
+            : result.error,
+        },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("Test email failed:", error);
-    const message =
-      error instanceof Error ? error.message : "Test email failed";
     return NextResponse.json(
-      {
-        error:
-          message.includes("Invalid login")
-            ? "Gmail rejected the login — check the address and App Password (16 characters, no spaces)."
-            : message,
-      },
+      { error: "Test email failed" },
       { status: 500 }
     );
   }

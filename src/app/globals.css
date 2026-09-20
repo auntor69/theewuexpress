@@ -177,6 +177,57 @@
     color: var(--accent);
   }
 
+  /* ---------- Long-form policy pages (privacy, terms) ---------- */
+
+  .legal-prose > section + section {
+    margin-top: 2.25rem;
+    padding-top: 2.25rem;
+    border-top: 1px solid var(--line);
+  }
+  .legal-prose h2 {
+    @apply font-display text-lg font-semibold tracking-tight sm:text-xl;
+    color: var(--ink);
+  }
+  .legal-prose h3 {
+    @apply mt-6 text-[13px] font-bold uppercase tracking-[0.14em];
+    color: var(--ink);
+  }
+  .legal-prose p {
+    @apply mt-3 text-[15px] leading-[1.75];
+    color: var(--muted);
+  }
+  .legal-prose ul {
+    @apply mt-3 list-none space-y-2.5 text-[15px] leading-[1.7];
+    color: var(--muted);
+  }
+  .legal-prose li {
+    position: relative;
+    padding-left: 1.1rem;
+  }
+  .legal-prose li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.6em;
+    width: 5px;
+    height: 5px;
+    border-radius: 9999px;
+    background: var(--gold);
+  }
+  .legal-prose strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .legal-prose a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: opacity 0.3s ease;
+  }
+  .legal-prose a:hover {
+    opacity: 0.75;
+  }
+
   /* Nav links: small caps with an underline that grows from the left. */
   .masthead-link {
     @apply relative text-[12px] font-semibold uppercase tracking-[0.14em] transition-colors duration-300;

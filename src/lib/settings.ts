@@ -13,7 +13,24 @@ export const SETTING_KEYS = {
   mailUser: "mail_user",
   mailAppPassword: "mail_app_password",
   siteUrl: "site_url",
+  /**
+   * Postal address printed in every newsletter email. CAN-SPAM
+   * (§7704(a)(5)(A)(iii)) requires a commercial email to carry a valid
+   * physical postal address, and it is what a reader (or a regulator) uses to
+   * identify who is actually mailing them. Editable in admin → Settings.
+   */
+  mailAddress: "mail_address",
+  /** Where readers send privacy / data-deletion requests. */
+  contactEmail: "contact_email",
 } as const;
+
+/**
+ * Fallback postal address used until the owner sets one. This is East West
+ * University's Aftabnagar campus — the owner should confirm it (or replace it
+ * with the department's own mailing address) in admin → Settings.
+ */
+export const DEFAULT_MAIL_ADDRESS =
+  "The EWU Express, East West University, Plot 77, Block B, Aftabnagar, Dhaka 1212, Bangladesh";
 
 export type SettingKey = (typeof SETTING_KEYS)[keyof typeof SETTING_KEYS];
 
@@ -58,6 +75,35 @@ export async function setSettings(values: Record<string, string>): Promise<void>
       await setSetting(key as SettingKey, value);
     }
   }
+}
+
+export interface NewsletterIdentity {
+  /** Postal address shown in the footer of every email. */
+  postalAddress: string;
+  /** Best available address for privacy / unsubscribe / takedown requests. */
+  contactEmail: string;
+}
+
+/**
+ * The publisher identity an email must disclose: who is sending, where they
+ * are, and how to reach them about privacy. Falls back sensibly so emails are
+ * never sent without a postal address.
+ */
+export async function getNewsletterIdentity(): Promise<NewsletterIdentity> {
+  const settings = await getSettings();
+  const mail = await getMailConfig();
+
+  return {
+    postalAddress:
+      settings[SETTING_KEYS.mailAddress]?.trim() ||
+      process.env.MAIL_ADDRESS?.trim() ||
+      DEFAULT_MAIL_ADDRESS,
+    contactEmail:
+      settings[SETTING_KEYS.contactEmail]?.trim().toLowerCase() ||
+      mail?.user ||
+      process.env.MAIL_USER?.trim() ||
+      "",
+  };
 }
 
 export interface MailConfig {

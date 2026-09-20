@@ -5,7 +5,13 @@ import { desc, notInArray, sql } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { slugify, escapeLikePattern } from "@/lib/utils";
 import { getCategoryBySlug } from "@/lib/categories";
-import { notifySubscribersOfPost } from "@/lib/notifications";
+import { notifySubscribersOfPost, DISPATCH_BUDGET_MS } from "@/lib/newsletter";
+
+/**
+ * The newsletter send is awaited so serverless keeps the function alive while
+ * it runs; the budget must therefore stay under this limit.
+ */
+export const maxDuration = 60;
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -152,9 +158,10 @@ export async function POST(request: NextRequest) {
 
     // New post published → notify subscribers. Awaited (with an internal time
     // budget) so serverless keeps the function alive long enough to send;
+    // anything that doesn't fit stays queued instead of being dropped, and
     // notifySubscribersOfPost never throws, so publishing can't fail on mail.
     if (newPost[0]?.published) {
-      await notifySubscribersOfPost(newPost[0]);
+      await notifySubscribersOfPost(newPost[0], { budgetMs: DISPATCH_BUDGET_MS });
     }
 
     return NextResponse.json(newPost[0], { status: 201 });

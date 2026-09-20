@@ -106,7 +106,7 @@ export function Footer() {
               ) : status === "success" ? (
                 <Check size={13} />
               ) : null}
-              {status === "success" ? "Done" : "Subscribe"}
+              {status === "success" ? "Sent" : "Subscribe"}
             </button>
           </form>
         </div>
@@ -121,12 +121,40 @@ export function Footer() {
           </p>
         )}
 
+        {/* Consent disclosure — required: a reader must know what they are
+            agreeing to before handing over an address. One line, kept quiet. */}
+        <p className="pb-3.5 -mt-1 text-[10.5px] leading-relaxed text-faint md:text-right">
+          We email a link to confirm, then a story when we publish. Unsubscribe
+          in one click, any time. See our{" "}
+          <Link
+            href="/privacy"
+            className="underline transition-colors duration-300 hover:text-ink"
+          >
+            privacy policy
+          </Link>
+          .
+        </p>
+
         {/* Colophon — one line. The admin panel is intentionally unlinked:
             staff know the URL, readers don't need a door into it. */}
         <div className="py-3.5 hairline-t">
-          <p className="text-faint text-[11px]">
-            &copy; {new Date().getFullYear()} The EWU Express &middot; East West
-            University, Dhaka
+          <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-faint text-[11px]">
+            <span>
+              &copy; {new Date().getFullYear()} The EWU Express &middot; East West
+              University, Dhaka
+            </span>
+            <Link
+              href="/privacy"
+              className="transition-colors duration-300 hover:text-ink"
+            >
+              Privacy
+            </Link>
+            <Link
+              href="/terms"
+              className="transition-colors duration-300 hover:text-ink"
+            >
+              Terms
+            </Link>
           </p>
         </div>
       </div>

@@ -15,6 +15,7 @@ import {
   Loader2,
   CheckCircle2,
   AlertTriangle,
+  Building2,
 } from "lucide-react";
 
 interface SettingsState {
@@ -22,6 +23,9 @@ interface SettingsState {
   mailUser: string;
   hasMailAppPassword: boolean;
   siteUrl: string;
+  mailAddress: string;
+  contactEmail: string;
+  resolvedMailAddress: string;
   active: {
     fromName: string;
     user: string;
@@ -42,6 +46,8 @@ export default function SettingsPage() {
     mailUser: "",
     mailAppPassword: "",
     siteUrl: "",
+    mailAddress: "",
+    contactEmail: "",
   });
   const [changingPassword, setChangingPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -62,6 +68,8 @@ export default function SettingsPage() {
             mailUser: data.mailUser || "",
             mailAppPassword: "",
             siteUrl: data.siteUrl || "",
+            mailAddress: data.mailAddress || "",
+            contactEmail: data.contactEmail || "",
           });
         }
         setLoading(false);
@@ -317,6 +325,53 @@ export default function SettingsPage() {
             The Site URL must be your live site (e.g. https://theewuexpress.vercel.app) —
             every newsletter email links the exact article there.
           </p>
+
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+              <span className="inline-flex items-center gap-1.5">
+                <Building2 size={13} /> Postal address
+              </span>{" "}
+              <span className="text-neutral-400 font-normal">(printed in every email)</span>
+            </label>
+            <input
+              type="text"
+              value={form.mailAddress}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, mailAddress: e.target.value }))
+              }
+              placeholder="The EWU Express, East West University, Aftabnagar, Dhaka 1212, Bangladesh"
+              className="w-full px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-red-500 dark:text-white"
+            />
+            <p className="text-xs text-neutral-400 mt-2 leading-relaxed">
+              Required by anti-spam law (CAN-SPAM) — every newsletter must show a
+              real physical address for the sender. Currently sending:{" "}
+              <span className="text-neutral-500 dark:text-neutral-400">
+                {state?.resolvedMailAddress || "—"}
+              </span>
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+              <span className="inline-flex items-center gap-1.5">
+                <Mail size={13} /> Privacy contact
+              </span>{" "}
+              <span className="text-neutral-400 font-normal">(data requests, unsubscribe help)</span>
+            </label>
+            <input
+              type="email"
+              value={form.contactEmail}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, contactEmail: e.target.value }))
+              }
+              placeholder="you@gmail.com"
+              className="w-full px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-red-500 dark:text-white"
+            />
+            <p className="text-xs text-neutral-400 mt-2 leading-relaxed">
+              Shown on your privacy and terms pages for access, deletion and
+              correction requests. Leave blank to use your Gmail address.
+            </p>
+          </div>
 
           <button
             type="submit"

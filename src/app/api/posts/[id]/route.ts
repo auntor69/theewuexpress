@@ -5,7 +5,10 @@ import { eq, sql } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { slugify } from "@/lib/utils";
 import { getCategoryBySlug } from "@/lib/categories";
-import { notifySubscribersOfPost } from "@/lib/notifications";
+import { notifySubscribersOfPost, DISPATCH_BUDGET_MS } from "@/lib/newsletter";
+
+/** The newsletter send is awaited on publish/update, so allow it to finish. */
+export const maxDuration = 60;
 
 export async function GET(
   request: NextRequest,
@@ -124,7 +127,12 @@ export async function PUT(
       (updatedPost[0].published && existing && !existing.published);
 
     if (updatedPost[0].published && shouldNotify) {
-      await notifySubscribersOfPost(updatedPost[0]);
+      await notifySubscribersOfPost(updatedPost[0], {
+        // Explicit admin re-send goes out again; a draft→published transition
+        // only ever sends once (the delivery log makes retries idempotent).
+        force: body.notify === true,
+        budgetMs: DISPATCH_BUDGET_MS,
+      });
     }
 
     return NextResponse.json(updatedPost[0]);
