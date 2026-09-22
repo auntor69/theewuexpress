@@ -5,7 +5,7 @@ import { Footer } from "@/components/layout/Footer";
 import { db, ensureSubscribersTable } from "@/db";
 import { subscribers } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { isConfirmLinkExpired, maskEmail } from "@/lib/newsletter";
+import { isConfirmLinkExpired, maskEmail } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Confirm your subscription — The EWU Express",

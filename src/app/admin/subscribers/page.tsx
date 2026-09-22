@@ -16,7 +16,7 @@ import {
   Loader2,
   Ban,
 } from "lucide-react";
-import { timeAgo } from "@/lib/utils";
+import { isConfirmLinkExpired, timeAgo } from "@/lib/utils";
 
 interface Subscriber {
   id: number;
@@ -51,6 +51,9 @@ export default function SubscribersPage() {
   const [active, setActive] = useState(0);
   const [awaiting, setAwaiting] = useState(0);
   const [unsubscribed, setUnsubscribed] = useState(0);
+  /** Pending signups whose confirmation link is past its 7-day window. */
+  const [expiredAwaiting, setExpiredAwaiting] = useState(0);
+  const [pruning, setPruning] = useState(false);
   const [overview, setOverview] = useState<Overview | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -70,6 +73,7 @@ export default function SubscribersPage() {
         setActive(data?.active || 0);
         setAwaiting(data?.awaiting || 0);
         setUnsubscribed(data?.unsubscribed || 0);
+        setExpiredAwaiting(data?.expiredAwaiting || 0);
       }
       if (overviewRes.ok) {
         setOverview(await overviewRes.json());
@@ -125,6 +129,31 @@ export default function SubscribersPage() {
       toast.success("Subscriber removed");
     } catch {
       toast.error("Failed to delete subscriber");
+    }
+  };
+
+  /** Removes dead pending signups (never confirmed, link expired). Safe:
+      such a row can never become a reader — the link no longer works. */
+  const handlePruneExpired = async () => {
+    if (
+      !confirm(
+        `Remove ${expiredAwaiting} signup${expiredAwaiting === 1 ? "" : "s"} that never confirmed within 7 days?`
+      )
+    )
+      return;
+    setPruning(true);
+    try {
+      const res = await fetch("/api/admin/subscribers?pruneExpired=1", {
+        method: "DELETE",
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Failed to prune");
+      toast.success(`Removed ${data.removed} expired signup${data.removed === 1 ? "" : "s"}`);
+      await load();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to prune");
+    } finally {
+      setPruning(false);
     }
   };
 
@@ -284,6 +313,25 @@ export default function SubscribersPage() {
             Signed up but never clicked the link in the confirmation email. They
             are not emailed until they do — that click is the record of consent.
           </p>
+          {expiredAwaiting > 0 && (
+            <div className="mt-3 rounded-xl bg-neutral-50 dark:bg-neutral-800/60 p-3">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                <span className="font-semibold text-neutral-700 dark:text-neutral-200">
+                  {expiredAwaiting} link{expiredAwaiting === 1 ? "" : "s"} expired
+                </span>{" "}
+                (older than 7 days) — they can no longer confirm and will never
+                be emailed.
+              </p>
+              <button
+                onClick={handlePruneExpired}
+                disabled={pruning}
+                className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-xs font-medium text-neutral-700 dark:text-neutral-200 transition-colors disabled:opacity-50"
+              >
+                {pruning ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
+                {pruning ? "Removing..." : "Clear expired"}
+              </button>
+            </div>
+          )}
         </div>
         <div className="bg-white dark:bg-neutral-900 rounded-2xl p-6">
           <div className="w-10 h-10 rounded-xl bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center text-neutral-500 mb-4">
@@ -362,9 +410,18 @@ export default function SubscribersPage() {
                           Unsubscribed
                         </span>
                       ) : !sub.confirmedAt ? (
-                        <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400">
-                          Awaiting confirmation
-                        </span>
+                        isConfirmLinkExpired(sub.subscribedAt) ? (
+                          <span
+                            className="text-xs font-medium px-2.5 py-1 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-400"
+                            title="Never confirmed within 7 days — can no longer be confirmed and will never be emailed"
+                          >
+                            Expired
+                          </span>
+                        ) : (
+                          <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400">
+                            Awaiting confirmation
+                          </span>
+                        )
                       ) : (
                         <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400">
                           Active

@@ -30,8 +30,11 @@ export async function GET(
       return NextResponse.json(post);
     }
 
+    // Only a real signed-in user (session.user) may read unpublished drafts.
+    // `session?.user` is the check that cannot be satisfied by the truthy
+    // empty session Auth.js returns when no secret is configured.
     const session = await auth();
-    const post = session
+    const post = session?.user
       ? await db.select().from(posts).where(eq(posts.id, id)).get()
       : await db.select().from(posts).where(sql`${posts.id} = ${id} AND ${posts.published} = 1`).get();
 
@@ -54,7 +57,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   const session = await auth();
-  if (!session) {
+  if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -150,7 +153,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   const session = await auth();
-  if (!session) {
+  if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
