@@ -45,8 +45,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.redirect(pageUrl(request, status), 303);
   }
 
-  return NextResponse.json(
-    { status },
-    { status: status === "invalid" ? 400 : 200 }
-  );
+  const failed = status === "invalid" || status === "expired";
+  return NextResponse.json({ status }, { status: failed ? 400 : 200 });
 }

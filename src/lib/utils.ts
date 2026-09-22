@@ -1,4 +1,4 @@
-function parseUTCDate(dateString: string): Date {
+export function parseUTCDate(dateString: string): Date {
   // SQLite stores UTC timestamps without Z suffix; browsers treat bare
   // datetime strings as local time. Append Z so JS parses them as UTC.
   if (!dateString.endsWith("Z") && !dateString.includes("+")) {
