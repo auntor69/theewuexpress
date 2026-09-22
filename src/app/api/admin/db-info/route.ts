@@ -4,7 +4,7 @@ import { databaseLabel, usingRemoteDatabase } from "@/db";
 
 export async function GET() {
   const session = await auth();
-  if (!session) {
+  if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

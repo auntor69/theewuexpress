@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Newsreader } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/layout/Providers";
+import { resolveSiteUrl } from "@/lib/siteUrl";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -14,6 +15,10 @@ const newsreader = Newsreader({
 });
 
 export const metadata: Metadata = {
+  // Anchors every relative OG/Twitter/canonical URL to an absolute origin.
+  // Without it, Next.js warns and social platforms can resolve relative
+  // preview images against the wrong host.
+  metadataBase: new URL(resolveSiteUrl()),
   title: {
     default: "The EWU Express | The Student News Publication of East West University",
     template: "%s | The EWU Express",
@@ -31,6 +36,10 @@ export const metadata: Metadata = {
     title: "The EWU Express",
     description:
       "The student news publication of East West University. Campus heat, real stories, student voice.",
+  },
+  // Lets browsers and reader apps discover the RSS feed from the page itself.
+  alternates: {
+    types: { "application/rss+xml": "/rss" },
   },
 };
 

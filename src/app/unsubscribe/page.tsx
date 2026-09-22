@@ -5,7 +5,7 @@ import { Footer } from "@/components/layout/Footer";
 import { db, ensureSubscribersTable } from "@/db";
 import { subscribers } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { maskEmail } from "@/lib/newsletter";
+import { maskEmail } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Unsubscribe — The EWU Express",

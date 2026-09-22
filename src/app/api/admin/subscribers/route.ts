@@ -6,14 +6,14 @@ import { auth } from "@/lib/auth";
 
 export async function GET() {
   const session = await auth();
-  if (!session) {
+  if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     await ensureSubscribersTable();
 
-    const [list, counts] = await Promise.all([
+    const [list, counts, expired] = await Promise.all([
       db
         .select()
         .from(subscribers)
@@ -29,6 +29,18 @@ export async function GET() {
           unsubscribed: sql<number>`sum(case when ${subscribers.unsubscribedAt} is null then 0 else 1 end)`,
         })
         .from(subscribers),
+      // Pending signups whose confirmation link is past its advertised 7-day
+      // window. They are never mailed either way — this count just lets the
+      // admin see (and prune) the dead weight instead of it piling up forever.
+      db
+        .select({ total: sql<number>`count(*)` })
+        .from(subscribers)
+        .where(
+          sql`${subscribers.confirmedAt} is null
+            and ${subscribers.unsubscribedAt} is null
+            and ${subscribers.subscribedAt} is not null
+            and ${subscribers.subscribedAt} < datetime('now', '-7 days')`
+        ),
     ]);
 
     return NextResponse.json({
@@ -37,6 +49,7 @@ export async function GET() {
       active: Number(counts[0]?.active ?? 0),
       awaiting: Number(counts[0]?.awaiting ?? 0),
       unsubscribed: Number(counts[0]?.unsubscribed ?? 0),
+      expiredAwaiting: Number(expired[0]?.total ?? 0),
     });
   } catch (error) {
     console.error("Error fetching subscribers:", error);
@@ -50,8 +63,32 @@ export async function GET() {
 /** Removes an address entirely — used for bounces and unsubscribe requests. */
 export async function DELETE(request: NextRequest) {
   const session = await auth();
-  if (!session) {
+  if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Bulk prune of dead pending signups: never confirmed, never opted out, and
+  // past the confirmation window, so the link can never be used. Removing them
+  // is safe — the only thing lost is a row that could never become a reader.
+  if (request.nextUrl.searchParams.get("pruneExpired") === "1") {
+    try {
+      await ensureSubscribersTable();
+      const result = await db
+        .delete(subscribers)
+        .where(
+          sql`${subscribers.confirmedAt} is null
+            and ${subscribers.unsubscribedAt} is null
+            and ${subscribers.subscribedAt} is not null
+            and ${subscribers.subscribedAt} < datetime('now', '-7 days')`
+        );
+      return NextResponse.json({ ok: true, removed: result.rowsAffected });
+    } catch (error) {
+      console.error("Error pruning expired signups:", error);
+      return NextResponse.json(
+        { error: "Failed to prune expired signups" },
+        { status: 500 }
+      );
+    }
   }
 
   const id = parseInt(request.nextUrl.searchParams.get("id") ?? "", 10);

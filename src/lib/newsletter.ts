@@ -19,7 +19,7 @@ import {
   SETTING_KEYS,
 } from "@/lib/settings";
 import { resolveSiteUrl } from "@/lib/siteUrl";
-import { parseUTCDate } from "@/lib/utils";
+import { isConfirmLinkExpired, isHardBounce } from "@/lib/utils";
 
 /**
  * Newsletter core: who gets an email, whether it went out, and how a reader
@@ -54,33 +54,6 @@ export function createConfirmToken(): string {
   return randomBytes(16).toString("hex");
 }
 
-/**
- * How long the link in the confirmation email stays usable. This is the window
- * the email itself advertises ("the link stops working after 7 days"), so it
- * has to be enforced — an expired link that still works makes the promise a
- * lie, and it lets a long-forgotten signup be confirmed by whoever finds the
- * mailbox open.
- */
-export const CONFIRM_LINK_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-
-/**
- * Whether a pending signup's confirmation link has aged out.
- *
- * `subscribedAt` doubles as the send time: it is stamped when the pending row
- * is written and restamped on every resend, so the clock starts at the most
- * recent confirmation email the reader received. A row with no usable
- * timestamp is never treated as expired — failing open here only ever costs a
- * late confirmation, while failing closed would silently drop a real reader.
- */
-export function isConfirmLinkExpired(
-  subscribedAt: string | null | undefined
-): boolean {
-  if (!subscribedAt) return false;
-  const sentAt = parseUTCDate(subscribedAt);
-  if (Number.isNaN(sentAt.getTime())) return false;
-  return Date.now() - sentAt.getTime() > CONFIRM_LINK_TTL_MS;
-}
-
 export function unsubscribeUrlFor(token: string, siteUrl?: string | null): string {
   return `${resolveSiteUrl(siteUrl)}/unsubscribe?token=${encodeURIComponent(token)}`;
 }
@@ -89,12 +62,7 @@ export function confirmUrlFor(token: string, siteUrl?: string | null): string {
   return `${resolveSiteUrl(siteUrl)}/confirm?token=${encodeURIComponent(token)}`;
 }
 
-export function maskEmail(email: string): string {
-  const [name, domain] = email.split("@");
-  if (!domain) return email;
-  const head = name.slice(0, 1);
-  return `${head}${"*".repeat(Math.max(name.length - 1, 2))}@${domain}`;
-}
+
 
 export interface DispatchSummary {
   total: number;
@@ -254,6 +222,11 @@ export async function drainNewsletterQueue(
   const budgetMs = options.budgetMs ?? DISPATCH_BUDGET_MS;
   const deadline = Date.now() + budgetMs;
 
+  // Rejections that mean the address is dead. Retrying them forever is why
+  // "Retry failed" existed in the first place — this is the fix, not a workaround.
+  // Rows carry no token; look it up through the recipient's unsubscribe token.
+  const suppress: { token: string; email: string; error: string }[] = [];
+
   for (let i = 0; i < rows.length; i += SEND_CONCURRENCY) {
     // Stop cleanly before the function is killed; the rest stays pending.
     if (Date.now() >= deadline) break;
@@ -308,6 +281,19 @@ export async function drainNewsletterQueue(
     }
 
     for (const failure of failures) {
+      // A hard bounce can never succeed on retry — the mailbox does not exist.
+      // Suppression is immediate; one attempt is enough to be certain.
+      if (isHardBounce(failure.error)) {
+        const recipient = batch.find((row) => row.id === failure.id);
+        const token = recipient ? tokenByEmail.get(recipient.email.trim().toLowerCase()) : undefined;
+        if (token) {
+          suppress.push({
+            token,
+            email: recipient!.email,
+            error: failure.error,
+          });
+        }
+      }
       await db
         .update(newsletterDeliveries)
         // A failed send records when we *tried* — `sentAt` stays null so a
@@ -316,6 +302,24 @@ export async function drainNewsletterQueue(
         .where(eq(newsletterDeliveries.id, failure.id));
       summary.failed += 1;
     }
+  }
+
+  // Opt the bounced addresses out, so the next story never even queues a row
+  // for them. Same mechanism and same permanence as a reader unsubscribe.
+  for (const bounced of suppress) {
+    if (!bounced.token) continue;
+    await db
+      .update(subscribers)
+      .set({ unsubscribedAt: nowUtc() })
+      .where(
+        and(
+          eq(subscribers.unsubscribeToken, bounced.token),
+          isNull(subscribers.unsubscribedAt)
+        )
+      );
+    console.warn(
+      `Newsletter: suppressed ${bounced.email} after a hard bounce (${bounced.error.slice(0, 120)}).`
+    );
   }
 
   summary.pending = summary.total - summary.sent - summary.failed - summary.skipped;
