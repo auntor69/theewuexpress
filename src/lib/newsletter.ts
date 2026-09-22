@@ -19,6 +19,7 @@ import {
   SETTING_KEYS,
 } from "@/lib/settings";
 import { resolveSiteUrl } from "@/lib/siteUrl";
+import { parseUTCDate } from "@/lib/utils";
 
 /**
  * Newsletter core: who gets an email, whether it went out, and how a reader
@@ -51,6 +52,33 @@ export function createUnsubscribeToken(): string {
 /** Same shape of secret as the unsubscribe token; separate so one cannot be used as the other. */
 export function createConfirmToken(): string {
   return randomBytes(16).toString("hex");
+}
+
+/**
+ * How long the link in the confirmation email stays usable. This is the window
+ * the email itself advertises ("the link stops working after 7 days"), so it
+ * has to be enforced — an expired link that still works makes the promise a
+ * lie, and it lets a long-forgotten signup be confirmed by whoever finds the
+ * mailbox open.
+ */
+export const CONFIRM_LINK_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+/**
+ * Whether a pending signup's confirmation link has aged out.
+ *
+ * `subscribedAt` doubles as the send time: it is stamped when the pending row
+ * is written and restamped on every resend, so the clock starts at the most
+ * recent confirmation email the reader received. A row with no usable
+ * timestamp is never treated as expired — failing open here only ever costs a
+ * late confirmation, while failing closed would silently drop a real reader.
+ */
+export function isConfirmLinkExpired(
+  subscribedAt: string | null | undefined
+): boolean {
+  if (!subscribedAt) return false;
+  const sentAt = parseUTCDate(subscribedAt);
+  if (Number.isNaN(sentAt.getTime())) return false;
+  return Date.now() - sentAt.getTime() > CONFIRM_LINK_TTL_MS;
 }
 
 export function unsubscribeUrlFor(token: string, siteUrl?: string | null): string {
@@ -590,7 +618,7 @@ export async function startSubscription(
   };
 }
 
-export type ConfirmStatus = "done" | "already" | "invalid";
+export type ConfirmStatus = "done" | "already" | "expired" | "invalid";
 
 /** Turns a confirmation link into an active subscription (once). */
 export async function confirmByToken(
@@ -613,6 +641,13 @@ export async function confirmByToken(
   // undo an unsubscribe. Subscribing again through the form is the way back.
   if (row.unsubscribedAt) return { status: "invalid" };
   if (row.confirmedAt) return { status: "already", email: row.email };
+
+  // Past the advertised window the link is dead. The row stays pending (so the
+  // address can still be removed or subscribed again), but it can no longer be
+  // turned into a subscription off the back of a weeks-old click.
+  if (isConfirmLinkExpired(row.subscribedAt)) {
+    return { status: "expired", email: row.email };
+  }
 
   await db
     .update(subscribers)

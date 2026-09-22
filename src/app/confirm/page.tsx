@@ -5,7 +5,7 @@ import { Footer } from "@/components/layout/Footer";
 import { db, ensureSubscribersTable } from "@/db";
 import { subscribers } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { maskEmail } from "@/lib/newsletter";
+import { isConfirmLinkExpired, maskEmail } from "@/lib/newsletter";
 
 export const metadata: Metadata = {
   title: "Confirm your subscription — The EWU Express",
@@ -26,22 +26,42 @@ export default async function ConfirmPage({
   const token = searchParams.token?.trim() ?? "";
 
   let email: string | undefined;
+  let unsubscribeToken: string | undefined;
+  let expired = false;
+
   if (token.length >= 16) {
     try {
       await ensureSubscribersTable();
       const row = await db
-        .select({ email: subscribers.email })
+        .select({
+          email: subscribers.email,
+          confirmedAt: subscribers.confirmedAt,
+          subscribedAt: subscribers.subscribedAt,
+          unsubscribeToken: subscribers.unsubscribeToken,
+        })
         .from(subscribers)
         .where(eq(subscribers.confirmToken, token))
         .get();
-      email = row?.email ?? undefined;
+
+      if (row?.email && !row.confirmedAt) {
+        // The same 7-day window /api/confirm enforces: once it is up, the page
+        // must stop offering a confirm button for a link that no longer works.
+        expired = isConfirmLinkExpired(row.subscribedAt);
+        if (!expired) {
+          email = row.email;
+          unsubscribeToken = row.unsubscribeToken ?? undefined;
+        }
+      }
     } catch {
       email = undefined;
     }
   }
 
   const invalid =
-    status === "invalid" || (!email && status !== "done" && status !== "already");
+    status === "invalid" ||
+    status === "expired" ||
+    expired ||
+    (!email && status !== "done" && status !== "already");
   const done = status === "done" || status === "already";
 
   return (
@@ -110,9 +130,31 @@ export default async function ConfirmPage({
               </button>
             </form>
             <p className="mt-4 text-xs text-faint">
-              Didn&apos;t ask for this? Close this page — no subscription is
-              created.
+              Didn&apos;t ask for this? Close this page — nothing is sent to this
+              address unless you confirm.
             </p>
+            {/* The abuse case: someone typed a stranger's address into the form.
+                One click suppresses the row for good, without the reader having
+                to email us about it. */}
+            {unsubscribeToken ? (
+              <form
+                action="/api/unsubscribe?redirect=1"
+                method="post"
+                className="mt-3"
+              >
+                <input
+                  type="hidden"
+                  name="token"
+                  value={unsubscribeToken}
+                />
+                <button
+                  type="submit"
+                  className="text-xs font-medium text-muted underline underline-offset-4 transition-colors duration-300 hover:text-ink"
+                >
+                  This wasn&apos;t me — remove this address
+                </button>
+              </form>
+            ) : null}
           </>
         )}
 
