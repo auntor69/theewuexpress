@@ -3,6 +3,10 @@ import bcrypt from "bcryptjs";
 // Scripts run outside Next.js, so load .env.local / .env ourselves.
 import { config as loadEnv } from "dotenv";
 import { LEGACY_CATEGORIES, categoryOrNull } from "./categories.legacy";
+import {
+  REMOTE_ADMIN_SKIP_WARNING,
+  planAdminBootstrap,
+} from "./adminBootstrap";
 
 loadEnv({ path: ".env.local", quiet: true });
 loadEnv({ quiet: true });
@@ -240,7 +244,15 @@ async function importFromSource() {
   );
 }
 
-async function ensureAdminUser() {
+/**
+ * Creates the first admin only when none exists.
+ *
+ * Credentials come from the environment; the weak dev default is only ever
+ * used against a LOCAL database. A remote (production) database is never
+ * given a guessable password — the run is skipped with instructions instead.
+ * (Same rule as src/db/seed.ts.)
+ */
+async function ensureAdminUser(isRemote: boolean) {
   const existing = await target.execute(
     "SELECT COUNT(*) AS n FROM admin_users"
   );
@@ -249,15 +261,29 @@ async function ensureAdminUser() {
     return;
   }
 
-  const email = process.env.ADMIN_EMAIL || "admin@ewuexpress.com";
-  const password = process.env.ADMIN_PASSWORD || "admin123";
-  const hashed = await bcrypt.hash(password, 10);
+  const plan = planAdminBootstrap({
+    email: process.env.ADMIN_EMAIL,
+    password: process.env.ADMIN_PASSWORD,
+    isRemote,
+  });
 
+  if (plan.action === "skip") {
+    console.warn(REMOTE_ADMIN_SKIP_WARNING);
+    return;
+  }
+
+  const hashed = await bcrypt.hash(plan.password, 10);
   await target.execute(
     "INSERT INTO admin_users (email, password, name) VALUES (?, ?, ?) ON CONFLICT(email) DO NOTHING",
-    [email, hashed, "Admin"]
+    [plan.email, hashed, "Admin"]
   );
-  console.log(`✓ Created admin user: ${email} (password: ${password} — change it after first login)`);
+  // Only the known local dev default is ever echoed; a configured password is
+  // never written to the log.
+  console.log(
+    plan.printPassword
+      ? `✓ Created local dev admin: ${plan.email} / ${plan.password} — change this before deploying.`
+      : `✓ Created admin user: ${plan.email}`
+  );
 }
 
 async function main() {
@@ -271,7 +297,7 @@ async function main() {
     await importFromSource();
   }
 
-  await ensureAdminUser();
+  await ensureAdminUser(isRemote);
   console.log("Migration complete!");
 }
 
