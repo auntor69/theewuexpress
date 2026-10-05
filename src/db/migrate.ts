@@ -2,6 +2,7 @@ import { createClient } from "@libsql/client";
 import bcrypt from "bcryptjs";
 // Scripts run outside Next.js, so load .env.local / .env ourselves.
 import { config as loadEnv } from "dotenv";
+import { LEGACY_CATEGORIES, categoryOrNull } from "./categories.legacy";
 
 loadEnv({ path: ".env.local", quiet: true });
 loadEnv({ quiet: true });
@@ -35,8 +36,6 @@ const target = createClient({
   url: process.env.DATABASE_URL || "file:local.db",
   authToken: process.env.DATABASE_AUTH_TOKEN,
 });
-
-const LEGACY_CATEGORIES = ["confessions", "real-talk"];
 
 const CREATE_POSTS = `
   CREATE TABLE IF NOT EXISTS posts (
@@ -83,12 +82,6 @@ const CREATE_APP_SETTINGS = `
     updated_at TEXT DEFAULT (datetime('now')) NOT NULL
   );
 `;
-
-function categoryOrNull(category: unknown): string | null {
-  const value = typeof category === "string" ? category.toLowerCase().trim() : "";
-  if (!value || LEGACY_CATEGORIES.includes(value)) return null;
-  return value;
-}
 
 async function ensureSchema() {
   const table = await target.execute(

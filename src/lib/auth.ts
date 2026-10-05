@@ -4,34 +4,14 @@ import { db } from "@/db";
 import { adminUsers } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
+import { createAttemptThrottle } from "@/lib/loginThrottle";
 
-/**
- * Lightweight in-memory throttle for credential stuffing / brute force.
- * Per-instance on serverless, but it still removes the easy "hammer the
- * login endpoint" path, and it never locks out a legitimate admin for long.
- */
 const MAX_FAILED_ATTEMPTS = 8;
 const ATTEMPT_WINDOW_MS = 5 * 60 * 1000;
-const failedAttempts = new Map<string, { count: number; firstAt: number }>();
-
-function isThrottled(key: string): boolean {
-  const entry = failedAttempts.get(key);
-  if (!entry) return false;
-  if (Date.now() - entry.firstAt > ATTEMPT_WINDOW_MS) {
-    failedAttempts.delete(key);
-    return false;
-  }
-  return entry.count >= MAX_FAILED_ATTEMPTS;
-}
-
-function recordFailure(key: string): void {
-  const entry = failedAttempts.get(key);
-  if (!entry || Date.now() - entry.firstAt > ATTEMPT_WINDOW_MS) {
-    failedAttempts.set(key, { count: 1, firstAt: Date.now() });
-    return;
-  }
-  entry.count += 1;
-}
+const { isThrottled, recordFailure, clear } = createAttemptThrottle(
+  MAX_FAILED_ATTEMPTS,
+  ATTEMPT_WINDOW_MS
+);
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -68,7 +48,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
-        failedAttempts.delete(attemptKey);
+        clear(attemptKey);
 
         return {
           id: String(user.id),
