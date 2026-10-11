@@ -1,6 +1,6 @@
 # The EWU Express
 
-The EWU Express is the student news publication of East West University — a campus media platform where stories are published without a category and assigned editorially, subscribers get new stories by email (double opt-in), and everything is run from a password-protected admin dashboard. It is deployed at [theewuexpress.vercel.app](https://theewuexpress.vercel.app) and actively run by the editorial team.
+The EWU Express is the student news publication of East West University — a campus media platform where stories are published without a category and assigned editorially, subscribers get new stories by email (double opt-in), and everything is run from a password-protected admin dashboard. It is deployed at [theewuexpress.online](https://theewuexpress.online) and actively run by the editorial team.
 
 **Status:** deployed and actively run campus product.
 
@@ -145,9 +145,19 @@ all it takes for it to become discoverable:
 Search-console verification is optional — set `GOOGLE_SITE_VERIFICATION` or
 `BING_SITE_VERIFICATION` in the environment (Vercel → Project → Settings →
 Environment Variables) and the matching verification meta tag is emitted.
-`NEXT_PUBLIC_SITE_URL` sets the canonical origin; production should point it at
-the real domain, otherwise the `site_url` setting saved in the admin panel, the
-Vercel URL, or the known production URL is used.
+Every canonical URL is built from one origin, resolved in this order
+(`src/lib/siteUrl.ts`):
+
+1. the **Site URL** saved in admin → Settings (highest priority — it also sets where
+   newsletter links point);
+2. `NEXT_PUBLIC_SITE_URL` in the environment;
+3. Vercel's `VERCEL_PROJECT_PRODUCTION_URL` / `VERCEL_URL`;
+4. `FALLBACK_SITE_URL` in `src/lib/siteUrl.ts` — currently
+   `https://theewuexpress.online`, the live domain.
+
+So on the live site the origin comes from the platform, while local runs and
+fresh deployments fall back to the domain hardcoded in step 4 — keep it on the
+real public domain when the site ever moves again.
 
 The URL and structured-data rules are pure functions, unit-tested in
 `src/lib/structuredData.test.ts`.

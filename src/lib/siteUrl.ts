@@ -6,9 +6,12 @@
  *   1. site_url saved in the database (admin → Settings) — the source of truth.
  *   2. NEXT_PUBLIC_SITE_URL environment variable.
  *   3. Vercel's VERCEL_PROJECT_PRODUCTION_URL / VERCEL_URL.
- *   4. The known production domain as a last resort.
+ *   4. The live production domain as a last resort.
+ *
+ * Keep the fallback on the real public domain: it is what local runs, previews
+ * and any deployment without the env vars above declare as canonical.
  */
-const FALLBACK_SITE_URL = "https://theewuexpress.vercel.app";
+const FALLBACK_SITE_URL = "https://theewuexpress.online";
 
 function normalizeUrl(candidate: string): string {
   const trimmed = candidate.trim().replace(/\/+$/, "");
