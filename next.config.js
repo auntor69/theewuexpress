@@ -1,5 +1,31 @@
+/**
+ * The publication moved to theewuexpress.online. Bookmarks, external links and
+ * cached search results still point at these hosts, so each one answers with a
+ * permanent redirect to the same path on the new domain instead of serving a
+ * second, competing copy of the site:
+ *
+ *   - the pre-migration Vercel host;
+ *   - `www`, so the apex stays the one canonical host.
+ *
+ * Next compiles each `value` as a regular expression (hence the escaped dots),
+ * and only these hosts are matched — Vercel preview URLs and localhost are
+ * untouched.
+ */
+const LEGACY_HOSTS = [
+  "theewuexpress\\.vercel\\.app",
+  "www\\.theewuexpress\\.online",
+];
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async redirects() {
+    return LEGACY_HOSTS.map((host) => ({
+      source: "/:path*",
+      has: [{ type: "host", value: host }],
+      destination: "https://theewuexpress.online/:path*",
+      permanent: true,
+    }));
+  },
   images: {
     // Explicit allowlist. A wildcard hostname would turn Next's image
     // optimizer into an open proxy that anyone could use to fetch and
