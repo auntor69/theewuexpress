@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { posts } from "@/db/schema";
 import { desc, sql } from "drizzle-orm";
 import { escapeLikePattern } from "@/lib/utils";
+import { pageAlternates } from "@/lib/siteUrl";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { InfiniteFeed } from "@/components/home/InfiniteFeed";
@@ -14,10 +15,18 @@ interface PageProps {
 }
 
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const query = searchParams.q?.trim();
+
   return {
-    title: searchParams.q
-      ? `Search: ${searchParams.q} | The EWU Express`
-      : "Search | The EWU Express",
+    // Bare title: the root layout's template adds "| The EWU Express".
+    title: query ? `Search: ${query}` : "Search",
+    description:
+      "Search every story published by The EWU Express — campus news, features, events and student life at East West University.",
+    alternates: pageAlternates("/search"),
+    // Result pages are thin and infinitely variable: the same stories under a
+    // different query string. They stay crawlable (the links are followed) but
+    // belong nowhere in the index.
+    robots: { index: false, follow: true },
   };
 }
 
