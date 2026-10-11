@@ -316,13 +316,13 @@ export default function SettingsPage() {
               onChange={(e) =>
                 setForm((prev) => ({ ...prev, siteUrl: e.target.value }))
               }
-              placeholder="https://theewuexpress.vercel.app"
+              placeholder="https://theewuexpress.online"
               className="w-full px-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-red-500 dark:text-white"
             />
           </div>
 
           <p className="text-xs text-neutral-400 -mt-2">
-            The Site URL must be your live site (e.g. https://theewuexpress.vercel.app) —
+            The Site URL must be your live site (e.g. https://theewuexpress.online) —
             every newsletter email links the exact article there.
           </p>
 

@@ -30,7 +30,7 @@ The following areas are in scope:
 ## What Is in Scope for a Fix
 
 Confirmed issues in the areas above will be triaged and patched, with fixes
-deployed to [theewuexpress.vercel.app](https://theewuexpress.vercel.app) as
+deployed to [theewuexpress.online](https://theewuexpress.online) as
 soon as practical.
 
 ## Response Expectations
