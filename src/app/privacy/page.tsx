@@ -1,13 +1,28 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/layout/LegalPage";
 import { getNewsletterIdentity } from "@/lib/settings";
+import { canonicalUrl, pageAlternates } from "@/lib/siteUrl";
+import { PUBLISHER_NAME } from "@/lib/structuredData";
 
 export const dynamic = "force-dynamic";
 
+const TITLE = "Privacy Policy";
+const DESCRIPTION =
+  "What The EWU Express collects, why, who else sees it, how long we keep it, and how to have your address removed.";
+
 export const metadata: Metadata = {
-  title: "Privacy Policy — The EWU Express",
-  description:
-    "What The EWU Express collects, why, who else sees it, how long we keep it, and how to have your address removed.",
+  // Bare title: the root layout's template adds "| The EWU Express".
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: pageAlternates("/privacy"),
+  openGraph: {
+    type: "website",
+    title: `${TITLE} — ${PUBLISHER_NAME}`,
+    description: DESCRIPTION,
+    url: canonicalUrl("/privacy"),
+    siteName: PUBLISHER_NAME,
+    locale: "en_US",
+  },
 };
 
 const UPDATED = "20 September 2026";

@@ -35,3 +35,31 @@ export function resolveSiteUrl(dbSiteUrl?: string | null): string {
 export function articleUrl(post: { slug: string }, dbSiteUrl?: string | null): string {
   return `${resolveSiteUrl(dbSiteUrl)}/article/${post.slug}`;
 }
+
+/**
+ * Absolute canonical URL for a path on this site.
+ *
+ * Deliberately built from the configured origin rather than the request host:
+ * a preview deployment must not declare itself canonical, or the preview and
+ * the live article would compete for the same query in search results.
+ */
+export function canonicalUrl(pathname = "/", dbSiteUrl?: string | null): string {
+  const base = resolveSiteUrl(dbSiteUrl);
+  const trimmed = pathname.trim();
+  if (!trimmed || trimmed === "/") return `${base}/`;
+  const path = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  return `${base}${path.replace(/\/+$/, "")}`;
+}
+
+/**
+ * The `<link>` relations every page carries: its own canonical URL plus the
+ * RSS feed. Returned as one object because Next resolves `alternates` per
+ * field, not by merging — a page that set only `canonical` would silently
+ * drop the feed link it inherited from the root layout.
+ */
+export function pageAlternates(pathname = "/", dbSiteUrl?: string | null) {
+  return {
+    canonical: canonicalUrl(pathname, dbSiteUrl),
+    types: { "application/rss+xml": "/rss" },
+  };
+}

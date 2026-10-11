@@ -1,13 +1,28 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/layout/LegalPage";
 import { getNewsletterIdentity } from "@/lib/settings";
+import { canonicalUrl, pageAlternates } from "@/lib/siteUrl";
+import { PUBLISHER_NAME } from "@/lib/structuredData";
 
 export const dynamic = "force-dynamic";
 
+const TITLE = "Terms of Use";
+const DESCRIPTION =
+  "How The EWU Express content may be used, the rules for reader contributions, our corrections and takedown process, and the limits of our liability.";
+
 export const metadata: Metadata = {
-  title: "Terms of Use — The EWU Express",
-  description:
-    "How The EWU Express content may be used, the rules for reader contributions, our corrections and takedown process, and the limits of our liability.",
+  // Bare title: the root layout's template adds "| The EWU Express".
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: pageAlternates("/terms"),
+  openGraph: {
+    type: "website",
+    title: `${TITLE} — ${PUBLISHER_NAME}`,
+    description: DESCRIPTION,
+    url: canonicalUrl("/terms"),
+    siteName: PUBLISHER_NAME,
+    locale: "en_US",
+  },
 };
 
 const UPDATED = "20 September 2026";

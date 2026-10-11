@@ -11,7 +11,7 @@ import {
   estimateReadTime,
   formatViews,
 } from "@/lib/utils";
-import { Eye, Clock, ArrowLeft } from "lucide-react";
+import { Eye, Clock } from "lucide-react";
 import { ShareRow } from "@/components/article/ShareRow";
 
 interface ArticleContentProps {
@@ -71,13 +71,42 @@ export function ArticleContent({
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
         >
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-muted hover:text-[var(--accent)] mt-8 transition-colors duration-300"
-          >
-            <ArrowLeft size={13} />
-            Front page
-          </Link>
+          {/* Breadcrumb trail. Mirrored by the BreadcrumbList markup the
+              server renders, so the trail a reader sees is the trail search
+              engines are given. */}
+          <nav aria-label="Breadcrumb" className="mt-8">
+            <ol className="flex min-w-0 items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em]">
+              <li className="shrink-0">
+                <Link
+                  href="/"
+                  className="text-muted transition-colors duration-300 hover:text-[var(--accent)]"
+                >
+                  Front page
+                </Link>
+              </li>
+              {category && (
+                <>
+                  <li aria-hidden className="shrink-0 text-faint">
+                    /
+                  </li>
+                  <li className="shrink-0">
+                    <Link
+                      href={`/category/${category.slug}`}
+                      className="text-muted transition-colors duration-300 hover:text-[var(--accent)]"
+                    >
+                      {category.name}
+                    </Link>
+                  </li>
+                </>
+              )}
+              <li aria-hidden className="shrink-0 text-faint">
+                /
+              </li>
+              <li className="min-w-0 truncate text-faint" aria-current="page">
+                {post.title}
+              </li>
+            </ol>
+          </nav>
 
           {category && (
             <div className="mt-6">

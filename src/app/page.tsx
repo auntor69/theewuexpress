@@ -9,8 +9,33 @@ import { HeroSection } from "@/components/home/HeroSection";
 import { SectionHeader } from "@/components/home/SectionHeader";
 import { PostCard } from "@/components/home/PostCard";
 import { InfiniteFeed } from "@/components/home/InfiniteFeed";
+import { canonicalUrl, pageAlternates, resolveSiteUrl } from "@/lib/siteUrl";
+import {
+  PUBLISHER_NAME,
+  SITE_DESCRIPTION,
+  SITE_OG_TITLE,
+  jsonLdGraph,
+  organizationNode,
+  serializeJsonLd,
+  websiteNode,
+} from "@/lib/structuredData";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+// Metadata fields replace rather than merge, so the openGraph block is
+// restated in full here instead of relying on the layout's.
+export const metadata: Metadata = {
+  alternates: pageAlternates("/"),
+  openGraph: {
+    type: "website",
+    title: SITE_OG_TITLE,
+    description: SITE_DESCRIPTION,
+    url: canonicalUrl("/"),
+    siteName: PUBLISHER_NAME,
+    locale: "en_US",
+  },
+};
 
 /**
  * The front page never shows the same story twice: each block excludes what
@@ -78,11 +103,32 @@ export default async function HomePage() {
 
   const latest = await getLatestPosts(usedIds);
 
+  const site = { url: resolveSiteUrl(), logo: `${resolveSiteUrl()}/logo.png` };
+  const jsonLd = jsonLdGraph([organizationNode(site), websiteNode(site)]);
+
   return (
     <main className="min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
+      />
       <Navbar />
       <div className="h-16 sm:h-[72px]" aria-hidden />
       <Dateline />
+      {/* The lead story carries the h1; when nothing is featured yet the page
+          still needs one heading that names it for crawlers and screen
+          readers. */}
+      {featured.length === 0 && (
+        <div className="container-editorial pt-8">
+          <h1 className="sr-only">
+            {PUBLISHER_NAME} — the student news publication of East West
+            University
+          </h1>
+          <p className="font-display text-3xl font-semibold tracking-tight text-ink">
+            No stories featured yet.
+          </p>
+        </div>
+      )}
       <HeroSection posts={featured} />
 
       {/* Most read — a ranked list, the way papers actually present it */}

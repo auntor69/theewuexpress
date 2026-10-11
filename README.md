@@ -18,7 +18,7 @@ The EWU Express is the student news publication of East West University — a ca
 - **Search** — Full-text search across stories
 - **Categories** — Campus Heat, Stories, Events, Did You Know?
 - **Responsive** — Mobile-first design with swipeable featured carousel
-- **SEO Optimized** — Meta tags, Open Graph, sitemap, RSS feed at `/rss`
+- **SEO Optimized** — Per-page titles and canonicals, Open Graph + Twitter cards with generated fallbacks, JSON-LD structured data, sitemap, robots.txt, RSS feed at `/rss` (see [SEO](#seo))
 
 ## Screenshots
 
@@ -126,6 +126,32 @@ There are two supported ways to manage the admin login:
    amber **"Needs Category"** filter and count badge.
 3. Click **Assign category** on any post to set it inline — no full edit needed.
 
+## SEO
+
+The crawlable surface is generated from the database, so publishing a story is
+all it takes for it to become discoverable:
+
+| Surface | Where | What it does |
+|---|---|---|
+| Titles & descriptions | `src/app/layout.tsx` + each page | One brand template (`%s \| The EWU Express`); pages set a bare title so the suffix can only appear once |
+| Canonical URLs | `src/lib/siteUrl.ts` (`canonicalUrl`, `pageAlternates`) | Every page declares one canonical URL built from the configured origin — a preview deployment never competes with the live article |
+| Open Graph / Twitter | page `metadata` + `src/app/opengraph-image.tsx` | Stories use their cover image with real published/modified times; pages without their own image fall back to the generated masthead card |
+| Structured data | `src/lib/structuredData.ts` | `NewsMediaOrganization` + `WebSite` with sitelinks search box (front page), `NewsArticle` + `BreadcrumbList` (stories), `CollectionPage` + `ItemList` (sections) |
+| `sitemap.xml` | `src/app/sitemap.ts` | Static pages, every section and all published stories, with last-modified dates. The noindexed `/search` page is intentionally absent |
+| `robots.txt` | `src/app/robots.ts` | Crawling allowed, with the admin panel, API and transactional pages (confirm / unsubscribe) excluded |
+| RSS | `src/app/rss/route.ts` | `application/rss+xml`, linked from every page's `<head>` |
+| 404 | `src/app/not-found.tsx` | Real 404 status, `noindex`, and links back into the sections |
+
+Search-console verification is optional — set `GOOGLE_SITE_VERIFICATION` or
+`BING_SITE_VERIFICATION` in the environment (Vercel → Project → Settings →
+Environment Variables) and the matching verification meta tag is emitted.
+`NEXT_PUBLIC_SITE_URL` sets the canonical origin; production should point it at
+the real domain, otherwise the `site_url` setting saved in the admin panel, the
+Vercel URL, or the known production URL is used.
+
+The URL and structured-data rules are pure functions, unit-tested in
+`src/lib/structuredData.test.ts`.
+
 ## Scripts
 
 | Command | Description |
@@ -149,15 +175,21 @@ src/
 │   ├── api/         # API routes
 │   ├── article/     # Article pages
 │   ├── category/    # Category pages
-│   └── search/      # Search page
+│   ├── search/      # Search page (noindex)
+│   └── not-found.tsx  # 404 page
 ├── components/      # React components
 │   ├── admin/       # Admin components (incl. Tiptap editor)
 │   ├── article/     # Article components
 │   ├── home/        # Homepage components
 │   └── layout/      # Layout components
 ├── db/              # Database schema, migrations & seed scripts
-└── lib/             # Utilities & helpers (auth, newsletter, feed, etc.)
+└── lib/             # Utilities & helpers (auth, newsletter, feed, SEO, etc.)
 ```
+
+**SEO surface:** `src/lib/siteUrl.ts` (canonical URLs),
+`src/lib/structuredData.ts` (JSON-LD builders), `src/app/sitemap.ts`,
+`src/app/robots.ts`, `src/app/rss/route.ts`,
+`src/app/opengraph-image.tsx`.
 
 ## Security & Governance
 
